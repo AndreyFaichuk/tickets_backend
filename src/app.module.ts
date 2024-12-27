@@ -1,10 +1,11 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 
 import { TodosController } from './todos/todos.controller';
 import { TodosService } from './todos/todos.servise';
 import { Todo, TodoSchema } from './schemas/todos.schemas';
+import { LoggerMiddleware } from './middlewares/logger.middleware';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -16,4 +17,8 @@ import { Todo, TodoSchema } from './schemas/todos.schemas';
   controllers: [TodosController],
   providers: [TodosService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}
