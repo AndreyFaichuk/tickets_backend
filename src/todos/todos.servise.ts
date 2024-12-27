@@ -12,6 +12,7 @@ export class TodosService {
   constructor(@InjectModel(Todo.name) private todoModel: Model<Todo>) {}
 
   create(createTodoDto: CreateTodoDto): Observable<Todo> {
+    console.log(createTodoDto, 'createTodoDto');
     const createdTodo = new this.todoModel(createTodoDto);
     return from(createdTodo.save());
   }

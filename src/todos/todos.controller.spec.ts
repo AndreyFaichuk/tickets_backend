@@ -1,18 +1,40 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { TodosService } from './todos.servise';
+import { CreateTodoDto } from './dto/create-todo.dto';
 import { TodosController } from './todos.controller';
+import { Model } from 'mongoose';
+import { Todo } from 'src/schemas/todos.schemas';
 
-describe('TodosController', () => {
+describe('Todos.service', () => {
   let controller: TodosController;
+  let service: TodosService;
+  let mockTodoModel: Partial<Model<Todo>>;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [TodosController],
-    }).compile();
+    mockTodoModel = {
+      create: jest.fn().mockResolvedValue({ _id: '123', ...test }),
+    };
 
-    controller = module.get<TodosController>(TodosController);
+    service = new TodosService(mockTodoModel as any);
+    controller = new TodosController(service);
   });
 
   it('should be defined', () => {
-    expect(controller).toBeDefined();
+    expect(service).toBeDefined();
+  });
+
+  describe('create', () => {
+    const test: CreateTodoDto = {
+      description: '',
+      name: '',
+      progress: 5,
+    };
+
+    it('should create a new todo', (done) => {
+      service.create(test).subscribe((asyncData) => {
+        console.log(asyncData, 'asyncData');
+        expect(asyncData).toBeDefined();
+        done();
+      });
+    });
   });
 });
