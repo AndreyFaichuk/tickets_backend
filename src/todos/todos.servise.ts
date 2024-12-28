@@ -21,6 +21,15 @@ export class TodosService {
   }
 
   async update(updateTodoDto: UpdateTodoDto): ApiResponse<Todo> {
+    const isValidId = mongoose.isValidObjectId(updateTodoDto._id);
+
+    if (!isValidId) {
+      throw new CustomException(
+        'Please, provide a valid Id!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     return this.todoModel.findByIdAndUpdate(updateTodoDto._id, updateTodoDto, {
       returnOriginal: false,
     });
