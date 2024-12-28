@@ -5,6 +5,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Todo } from 'src/schemas/todos.schemas';
 import { CreateTodoDto, UpdateTodoDto } from './dto/create-todo.dto';
 import { CustomException } from 'src/exceptions/customExeption.exeption';
+import { ApiResponse } from 'src/types';
 
 @Injectable()
 export class TodosService {
@@ -15,17 +16,17 @@ export class TodosService {
     return createdTodo.save();
   }
 
-  async findAll(): Promise<Todo[]> {
+  async findAll(): ApiResponse<Todo[]> {
     return this.todoModel.find();
   }
 
-  async update(updateTodoDto: UpdateTodoDto): Promise<Todo> {
+  async update(updateTodoDto: UpdateTodoDto): ApiResponse<Todo> {
     return this.todoModel.findByIdAndUpdate(updateTodoDto._id, updateTodoDto, {
       returnOriginal: false,
     });
   }
 
-  async findOne(_id: string): Promise<Todo> {
+  async findOne(_id: string): ApiResponse<Todo> {
     const isValidId = mongoose.isValidObjectId(_id);
 
     if (!isValidId) {
@@ -38,7 +39,7 @@ export class TodosService {
     return this.todoModel.findById(_id);
   }
 
-  async delete(_id: string): Promise<Todo> {
+  async delete(_id: string): ApiResponse<Todo> {
     const isValidId = mongoose.isValidObjectId(_id);
 
     if (!isValidId) {
