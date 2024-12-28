@@ -7,38 +7,37 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { Observable, from } from 'rxjs';
 
 import { TodosService } from './todos.servise';
 import { Todo } from 'src/schemas/todos.schemas';
-import { CreateTodoDto, Id, UpdateTodoDto } from './dto/create-todo.dto';
+import { CreateTodoDto, UpdateTodoDto } from './dto/create-todo.dto';
 
 @Controller('todos')
 export class TodosController {
   constructor(private readonly todosService: TodosService) {}
 
   @Get('/all')
-  getAllTodos(): Observable<Todo[]> {
-    return from(this.todosService.findAll());
+  async getAllTodos(): Promise<Todo[]> {
+    return await this.todosService.findAll();
   }
 
   @Get(':_id')
-  getTodo(@Param() params: Id): Observable<Todo> {
-    return from(this.todosService.findOne(params._id));
+  async getTodo(@Param() params: { _id: string }): Promise<Todo> {
+    return await this.todosService.findOne(params._id);
   }
 
   @Post('/create')
-  createTodo(@Body() createTodoDto: CreateTodoDto): Observable<Todo> {
-    return from(this.todosService.create(createTodoDto));
+  async createTodo(@Body() createTodoDto: CreateTodoDto): Promise<Todo> {
+    return await this.todosService.create(createTodoDto);
   }
 
   @Patch('/update')
-  updateTodo(@Body() updateTodoDto: UpdateTodoDto): Observable<Todo> {
-    return from(this.todosService.update(updateTodoDto));
+  async updateTodo(@Body() updateTodoDto: UpdateTodoDto): Promise<Todo> {
+    return await this.todosService.update(updateTodoDto);
   }
 
   @Delete(':_id')
-  deleteTodo(@Param() params: Id): Observable<Todo> {
-    return from(this.todosService.delete(params));
+  async deleteTodo(@Param() params: { _id: string }): Promise<Todo> {
+    return await this.todosService.delete(params._id);
   }
 }

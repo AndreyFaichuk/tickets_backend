@@ -1,51 +1,61 @@
-import { Model } from 'mongoose';
-import { Observable, from, of, switchMap } from 'rxjs';
+import mongoose, { Model } from 'mongoose';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
 import { Todo } from 'src/schemas/todos.schemas';
-import { CreateTodoDto, Id, UpdateTodoDto } from './dto/create-todo.dto';
+import { CreateTodoDto, UpdateTodoDto } from './dto/create-todo.dto';
 import { CustomException } from 'src/exceptions/customExeption.exeption';
 
 @Injectable()
 export class TodosService {
   constructor(@InjectModel(Todo.name) private todoModel: Model<Todo>) {}
 
-  create(createTodoDto: CreateTodoDto): Observable<Todo> {
-    console.log(createTodoDto, 'createTodoDto');
+  async create(createTodoDto: CreateTodoDto): Promise<Todo> {
     const createdTodo = new this.todoModel(createTodoDto);
-    return from(createdTodo.save());
+    return createdTodo.save();
   }
 
-  findAll(): Observable<Todo[]> {
-    return from(this.todoModel.find().exec());
+  async findAll(): Promise<Todo[]> {
+    return this.todoModel.find();
   }
 
-  update(updateTodoDto: UpdateTodoDto): Observable<Todo> {
-    const updatedTodo = this.todoModel.findByIdAndUpdate(
-      updateTodoDto._id,
-      updateTodoDto,
-      { returnOriginal: false },
-    );
-
-    return from(updatedTodo);
+  async update(updateTodoDto: UpdateTodoDto): Promise<Todo> {
+    return this.todoModel.findByIdAndUpdate(updateTodoDto._id, updateTodoDto, {
+      returnOriginal: false,
+    });
   }
 
-  findOne(_id: Id): Observable<Todo> {
-    return from(this.todoModel.findById(_id).exec());
+  async findOne(_id: string): Promise<Todo> {
+    const isValidId = mongoose.isValidObjectId(_id);
+
+    if (!isValidId) {
+      throw new CustomException(
+        'Please, provide a valid Id!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return this.todoModel.findById(_id);
   }
 
-  delete(params: Id): Observable<Todo> {
-    return from(this.todoModel.findByIdAndDelete(params._id).exec()).pipe(
-      switchMap((result) => {
-        if (!result) {
-          throw new CustomException(
-            `Todo with id ${params._id} not found!`,
-            HttpStatus.NOT_FOUND,
-          );
-        }
-        return of(result);
-      }),
-    );
+  async delete(_id: string): Promise<Todo> {
+    const isValidId = mongoose.isValidObjectId(_id);
+
+    if (!isValidId) {
+      throw new CustomException(
+        'Please, provide a valid Id!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const res = await this.todoModel.findByIdAndDelete(_id);
+    if (!res) {
+      throw new CustomException(
+        `Todo with id ${_id} not found!`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    return res;
   }
 }
