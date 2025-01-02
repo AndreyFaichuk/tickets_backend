@@ -3,7 +3,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
 import { Todo } from 'src/schemas/todos.schemas';
-import { CreateTodoDto, UpdateTodoDto } from './dto/create-todo.dto';
+import { CreateTodoDto, UpdateTodoDto } from './dto/createTodo.dto';
 import { CustomException } from 'src/exceptions/customExeption.exeption';
 import { ApiResponse } from 'src/types';
 

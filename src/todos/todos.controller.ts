@@ -10,7 +10,7 @@ import {
 
 import { TodosService } from './todos.servise';
 import { Todo } from 'src/schemas/todos.schemas';
-import { CreateTodoDto, UpdateTodoDto } from './dto/create-todo.dto';
+import { CreateTodoDto, UpdateTodoDto } from './dto/createTodo.dto';
 import { ApiResponse } from 'src/types';
 
 @Controller('todos')
