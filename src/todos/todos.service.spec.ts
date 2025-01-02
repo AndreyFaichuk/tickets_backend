@@ -4,12 +4,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 
 import { TodosService } from './todos.servise';
-import { TodosController } from './todos.controller';
 import { Todo } from 'src/schemas/todos.schemas';
 import { CustomException } from 'src/exceptions/customExeption.exeption';
 
 describe('TodosService', () => {
-  let controller: TodosController;
   let todoService: TodosService;
   let model: Model<Todo>;
 
