@@ -2,8 +2,10 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
 import { UsersService } from 'src/users/users.service';
-import { RegistrationUserDto } from './dto/RegistrationUserDto';
-import { User } from 'src/schemas/users.schemas';
+import {
+  RegisteredUserDto,
+  RegistrationUserDto,
+} from './dto/RegistrationUserDto';
 import { CustomException } from 'src/exceptions/customExeption.exeption';
 
 @Injectable()
@@ -11,17 +13,17 @@ export class AuthService {
   constructor(private readonly usersService: UsersService) {}
 
   static async hashPassword(password: string) {
-    const salt = await bcrypt.genSalt();
-    return await bcrypt.hash(password, salt);
+    const saltOrRounds = 10;
+    return await bcrypt.hash(password, saltOrRounds);
   }
 
-  static async comparePasswords(password: string) {
-    const hash = await AuthService.hashPassword(password);
-
+  static async comparePasswords(password: string, hash: string) {
     return await bcrypt.compare(password, hash);
   }
 
-  async registration(registrationUser: RegistrationUserDto): Promise<User> {
+  async registration(
+    registrationUser: RegistrationUserDto,
+  ): Promise<RegisteredUserDto> {
     const existingUser = await this.usersService.findOneByEmail(
       registrationUser.email,
     );
@@ -35,9 +37,11 @@ export class AuthService {
 
     const { password, ...rest } = registrationUser;
 
+    console.log(registrationUser, 'registrationUser');
+
     const hashedPassword = await AuthService.hashPassword(password);
 
-    const createdUser = this.usersService.createNew({
+    const createdUser = await this.usersService.createNew({
       ...rest,
       password: hashedPassword,
     });

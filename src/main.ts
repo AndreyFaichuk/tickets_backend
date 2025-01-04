@@ -12,11 +12,14 @@ async function bootstrap() {
     .setVersion('1.0')
     .build();
 
+  app.use(cookieParser());
+
+  app.enableCors({ credentials: true, origin: 'http://localhost:5173' });
+
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
 
-  app.enableCors();
-  app.use(cookieParser());
   await app.listen(process.env.PORT ?? 3000);
 }
+
 bootstrap();
