@@ -26,8 +26,3 @@ export class RegistrationUserDto {
   @ApiProperty({ example: '2000-01-15' })
   dateOfBirth: string;
 }
-
-export class RegisteredUserDto extends RegistrationUserDto {
-  @ApiProperty()
-  _id: string;
-}

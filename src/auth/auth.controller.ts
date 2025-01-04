@@ -7,15 +7,20 @@ import {
   Post,
   Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 
 import { AuthService } from './auth.service';
 import { RegistrationUserDto } from './dto/RegistrationUserDto';
-import { Response } from 'express';
+import { LoginUserDto } from './dto/LoginUserDto';
+import { CookieService } from 'src/cookie/cookie.service';
 
 @ApiCookieAuth()
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly cookieService: CookieService,
+  ) {}
 
   @HttpCode(HttpStatus.OK)
   @Post('registration')
@@ -26,10 +31,21 @@ export class AuthController {
     const registeredUser =
       await this.authService.registration(registrationUserDto);
 
-    res.cookie('user_id', registeredUser._id, {
-      maxAge: 36000,
-    });
+    this.cookieService.setCookie(res, 'user_id', registeredUser);
 
-    return registeredUser;
+    return;
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('login')
+  async login(
+    @Body() loginUserDto: LoginUserDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const loggedInUser = await this.authService.login(loginUserDto);
+
+    this.cookieService.setCookie(res, 'user_id', loggedInUser);
+
+    return;
   }
 }
