@@ -27,7 +27,7 @@ export class RegistrationUserDto {
   dateOfBirth: string;
 }
 
-// export class UpdateTodoDto extends RegisterUserDto {
-//   @ApiProperty()
-//   _id: string;
-// }
+export class RegisteredUserDto extends RegistrationUserDto {
+  @ApiProperty()
+  _id: string;
+}

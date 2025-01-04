@@ -1,14 +1,16 @@
+import { ApiCookieAuth } from '@nestjs/swagger';
 import {
   Body,
   Controller,
   HttpCode,
   HttpStatus,
   Post,
-  Response,
+  Res,
 } from '@nestjs/common';
+
 import { AuthService } from './auth.service';
 import { RegistrationUserDto } from './dto/RegistrationUserDto';
-import { ApiCookieAuth } from '@nestjs/swagger';
+import { Response } from 'express';
 
 @ApiCookieAuth()
 @Controller('auth')
@@ -19,8 +21,15 @@ export class AuthController {
   @Post('registration')
   async registration(
     @Body() registrationUserDto: RegistrationUserDto,
-    @Response() res,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    return this.authService.registration(registrationUserDto);
+    const registeredUser =
+      await this.authService.registration(registrationUserDto);
+
+    res.cookie('user_id', registeredUser._id, {
+      maxAge: 36000,
+    });
+
+    return registeredUser;
   }
 }
