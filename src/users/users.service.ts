@@ -1,27 +1,35 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import {
-  RegisteredUserDto,
-  RegistrationUserDto,
-} from 'src/auth/dto/RegistrationUserDto';
-import { User } from 'src/schemas/users.schemas';
+import { RegistrationUserDto } from 'src/auth/dto/RegistrationUserDto';
+import { User, UserDocument } from 'src/schemas/users.schemas';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private usersModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private usersModel: Model<UserDocument>,
+  ) {}
 
-  async findOneByEmail(email: string): Promise<User> {
+  async findOneByEmail(
+    email: string,
+    updateFields?: Partial<UserDocument>,
+  ): Promise<UserDocument | null> {
+    if (updateFields) {
+      return this.usersModel.findOneAndUpdate(
+        { email },
+        { $set: updateFields },
+        { new: true },
+      );
+    }
+
     return this.usersModel.findOne({ email });
   }
 
   async createNew(
     registrationUser: RegistrationUserDto,
-  ): Promise<RegisteredUserDto> {
+  ): Promise<UserDocument> {
     const registeredUser = new this.usersModel(registrationUser);
     const savedUser = await registeredUser.save();
-    const result = savedUser.toObject();
-
-    return { ...result, _id: result._id.toString() };
+    return savedUser;
   }
 }

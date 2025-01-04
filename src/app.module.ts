@@ -12,6 +12,7 @@ import { UsersService } from './users/users.service';
 import { User, UserSchema } from './schemas/users.schemas';
 import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
+import { CookieService } from './cookie/cookie.service';
 @Module({
   imports: [
     HttpModule,
@@ -25,7 +26,7 @@ import { AuthService } from './auth/auth.service';
     ]),
   ],
   controllers: [TodosController, UsersController, AuthController],
-  providers: [TodosService, UsersService, AuthService],
+  providers: [TodosService, UsersService, AuthService, CookieService],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer): void {
