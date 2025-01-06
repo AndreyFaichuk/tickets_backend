@@ -13,6 +13,7 @@ import { AuthService } from './auth.service';
 import { RegistrationUserDto } from './dto/RegistrationUserDto';
 import { LoginUserDto } from './dto/LoginUserDto';
 import { CookieService } from 'src/cookie/cookie.service';
+import { COOKIE_NAMES } from 'src/cookie/cookie.constants';
 
 @ApiCookieAuth()
 @Controller('auth')
@@ -31,7 +32,7 @@ export class AuthController {
     const registeredUser =
       await this.authService.registration(registrationUserDto);
 
-    this.cookieService.setCookie(res, 'user_id', registeredUser);
+    this.cookieService.setCookie(res, COOKIE_NAMES.sessionId, registeredUser);
 
     return;
   }
@@ -44,7 +45,7 @@ export class AuthController {
   ) {
     const loggedInUser = await this.authService.login(loginUserDto);
 
-    this.cookieService.setCookie(res, 'user_id', loggedInUser);
+    this.cookieService.setCookie(res, COOKIE_NAMES.sessionId, loggedInUser);
 
     return;
   }

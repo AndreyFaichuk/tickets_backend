@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { RegistrationUserDto } from 'src/auth/dto/RegistrationUserDto';
+import { CustomException } from 'src/exceptions/customExeption.exeption';
 import { User, UserDocument } from 'src/schemas/users.schemas';
 
 @Injectable()
@@ -31,5 +32,15 @@ export class UsersService {
     const registeredUser = new this.usersModel(registrationUser);
     const savedUser = await registeredUser.save();
     return savedUser;
+  }
+
+  async findCurrent(_id: string): Promise<UserDocument | null> {
+    const user = this.usersModel.findById(_id);
+
+    if (!user) {
+      throw new CustomException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    return user;
   }
 }
