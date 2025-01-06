@@ -1,7 +1,14 @@
-import { Injectable } from '@nestjs/common';
-import { Response, Request } from 'express';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
+import { Response, Request } from 'express';
+import { CustomException } from 'src/exceptions/customExeption.exeption';
+
 import { UserDocument } from 'src/schemas/users.schemas';
+
+export type CookieData = {
+  userId: string;
+  expiry: string;
+};
 
 @Injectable()
 export class CookieService {
@@ -25,7 +32,7 @@ export class CookieService {
       .digest('base64')
       .substr(0, 32);
 
-    const iv = crypto.randomBytes(this.ivLength); // Генерация случайного IV
+    const iv = crypto.randomBytes(this.ivLength);
     const cipher = crypto.createCipheriv(this.algorithm, Buffer.from(key), iv);
 
     let encrypted = cipher.update(data, 'utf8', 'hex');
@@ -43,15 +50,24 @@ export class CookieService {
       .digest('base64')
       .substr(0, 32);
 
-    const decipher = crypto.createDecipheriv(
-      this.algorithm,
-      Buffer.from(key),
-      iv,
-    );
+    try {
+      const decipher = crypto.createDecipheriv(
+        this.algorithm,
+        Buffer.from(key),
+        iv,
+      );
 
-    let decrypted = decipher.update(encrypted, 'hex', 'utf8');
-    decrypted += decipher.final('utf8');
-    return decrypted;
+      let decrypted = decipher.update(encrypted, 'hex', 'utf8');
+      decrypted += decipher.final('utf8');
+      return decrypted;
+    } catch (error) {
+      console.error('Error decrypting cookie:', error);
+
+      throw new CustomException(
+        'Invalid session, please, login!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   setCookie(res: Response, name: string, user: UserDocument) {
@@ -70,14 +86,21 @@ export class CookieService {
 
   validateCookie(req: Request, cookieName: string): string | null {
     const cookie = req.cookies[cookieName];
-    if (cookie) {
-      try {
-        return this.decryptData(cookie);
-      } catch (error) {
-        console.error('Error decrypting cookie:', error);
-        return null;
-      }
+    if (!cookie) {
+      throw new CustomException(
+        'Invalid or expired session',
+        HttpStatus.UNAUTHORIZED,
+      );
     }
-    return null;
+
+    const decryptedCookie = this.decryptData(cookie);
+
+    const { userId, expiry } = JSON.parse(decryptedCookie) as CookieData;
+
+    if (new Date(expiry) < new Date()) {
+      throw new CustomException('Expired session', HttpStatus.UNAUTHORIZED);
+    }
+
+    return userId;
   }
 }
