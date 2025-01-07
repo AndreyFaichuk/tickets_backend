@@ -2,8 +2,8 @@ import mongoose, { Model } from 'mongoose';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
-import { Todo } from 'src/schemas/todos.schemas';
-import { CreateTodoDto, UpdateTodoDto } from './dto/createTodo.dto';
+import { Todo, TodoDocument } from 'src/schemas/todos.schemas';
+import { CreateTodoDto } from './dto/createTodo.dto';
 import { CustomException } from 'src/exceptions/customExeption.exeption';
 import { ApiResponse } from 'src/types';
 
@@ -11,16 +11,21 @@ import { ApiResponse } from 'src/types';
 export class TodosService {
   constructor(@InjectModel(Todo.name) private todoModel: Model<Todo>) {}
 
-  async create(createTodoDto: CreateTodoDto): Promise<Todo> {
-    const createdTodo = new this.todoModel(createTodoDto);
+  async create(
+    createTodoDto: CreateTodoDto,
+    userId: string,
+  ): ApiResponse<Todo> {
+    const newTodo: Todo = { ...createTodoDto, creatorId: userId };
+
+    const createdTodo = new this.todoModel(newTodo);
     return createdTodo.save();
   }
 
-  async findAll(): ApiResponse<Todo[]> {
-    return this.todoModel.find();
+  async findAll(userId: string): ApiResponse<Todo[]> {
+    return this.todoModel.find({ creatorId: userId });
   }
 
-  async update(updateTodoDto: UpdateTodoDto): ApiResponse<Todo> {
+  async update(updateTodoDto: TodoDocument): ApiResponse<Todo> {
     const isValidId = mongoose.isValidObjectId(updateTodoDto._id);
 
     if (!isValidId) {
