@@ -35,7 +35,10 @@ export class UsersService {
   }
 
   async findCurrent(_id: string): Promise<UserDocument | null> {
-    const user = this.usersModel.findById(_id);
+    const user = await this.usersModel
+      .findById(_id)
+      .select('-password -isRememberMe')
+      .exec();
 
     if (!user) {
       throw new CustomException('User not found', HttpStatus.NOT_FOUND);

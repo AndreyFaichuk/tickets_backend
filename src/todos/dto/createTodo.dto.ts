@@ -1,17 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateTodoDto {
-  @ApiProperty()
+  @ApiProperty({ example: 'Todo name' })
   name: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'Todo description' })
   description: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 90 })
   progress: number;
-}
-
-export class UpdateTodoDto extends CreateTodoDto {
-  @ApiProperty()
-  _id: string;
 }

@@ -61,6 +61,8 @@ export class AuthService {
 
     const { password } = existingUser;
 
+    console.log(existingUser, 'loggedInUserloggedInUserloggedInUser 64');
+
     const arePasswordsMatch = await AuthService.comparePasswords(
       loginUser.password,
       password,

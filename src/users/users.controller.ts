@@ -13,7 +13,7 @@ export class UsersController {
   ) {}
 
   @HttpCode(HttpStatus.OK)
-  @Get('current')
+  @Get('me')
   async getCurrentUser(@Req() req: Request) {
     const userId = this.cookieService.validateCookie(
       req,
