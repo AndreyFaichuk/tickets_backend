@@ -45,8 +45,6 @@ export class AuthController {
   ) {
     const loggedInUser = await this.authService.login(loginUserDto);
 
-    console.log(loggedInUser, 'loggedInUserloggedInUserloggedInUser');
-
     this.cookieService.setCookie(res, COOKIE_NAMES.sessionId, loggedInUser);
 
     return;

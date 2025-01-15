@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsMongoId, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { HydratedDocument } from 'mongoose';
 
 export type TodoDocument = HydratedDocument<Todo>;
@@ -34,7 +34,10 @@ export class Todo {
   })
   @IsNotEmpty()
   @IsString()
-  creatorId: string;
+  columnId: string;
+
+  @IsMongoId()
+  _id: string;
 }
 
 export const TodoSchema = SchemaFactory.createForClass(Todo);

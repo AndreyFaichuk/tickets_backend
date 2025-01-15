@@ -15,7 +15,7 @@ export class TodosService {
     createTodoDto: CreateTodoDto,
     userId: string,
   ): ApiResponse<Todo> {
-    const newTodo: Todo = { ...createTodoDto, creatorId: userId };
+    const newTodo: Todo = { ...createTodoDto, columnId: userId, _id: '' };
 
     const createdTodo = new this.todoModel(newTodo);
     return createdTodo.save();

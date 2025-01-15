@@ -13,6 +13,9 @@ import { User, UserSchema } from './schemas/users.schemas';
 import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
 import { CookieService } from './cookie/cookie.service';
+import { ColumnsController } from './columns/columns.controller';
+import { ColumnsService } from './columns/columns.service';
+import { Column, ColumnSchema } from './schemas/columns.schema';
 @Module({
   imports: [
     HttpModule,
@@ -23,10 +26,22 @@ import { CookieService } from './cookie/cookie.service';
     MongooseModule.forFeature([
       { name: Todo.name, schema: TodoSchema },
       { name: User.name, schema: UserSchema },
+      { name: Column.name, schema: ColumnSchema },
     ]),
   ],
-  controllers: [TodosController, UsersController, AuthController],
-  providers: [TodosService, UsersService, AuthService, CookieService],
+  controllers: [
+    TodosController,
+    UsersController,
+    AuthController,
+    ColumnsController,
+  ],
+  providers: [
+    TodosService,
+    UsersService,
+    AuthService,
+    CookieService,
+    ColumnsService,
+  ],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer): void {
