@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { IsArray, IsNotEmpty, IsString } from 'class-validator';
-import { HydratedDocument } from 'mongoose';
-import { Todo } from './todos.schemas';
+import { IsNotEmpty, IsString } from 'class-validator';
+import { HydratedDocument, Types } from 'mongoose';
 
 export type ColumnDocument = HydratedDocument<Column>;
 
@@ -18,12 +17,10 @@ export class Column {
   title: string;
 
   @Prop({
-    type: [Todo],
+    type: [{ type: Types.ObjectId, ref: 'Todo' }],
     default: [],
-    unique: false,
   })
-  @IsArray()
-  cards: Todo[];
+  cards: Types.ObjectId[];
 
   @Prop({
     isRequired: true,

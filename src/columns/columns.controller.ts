@@ -19,7 +19,6 @@ import { Column } from 'src/schemas/columns.schema';
 import { ColumnsService } from './columns.service';
 import { UpdateColumnDto } from './dto/updateColumn.dto';
 import { MoveCardDto } from './dto/moveCard.dto';
-import { Todo, TodoDocument } from 'src/schemas/todos.schemas';
 
 @Controller('columns')
 export class ColumnsController {
@@ -63,58 +62,18 @@ export class ColumnsController {
 
   @Patch(':id')
   async updateColumn(
-    @Param('id') columnId: string,
+    @Param() params: { id: string },
     @Body() updateColumnDto: UpdateColumnDto,
   ): ApiResponse<Column> {
-    return this.columnsService.updateColumn(columnId, updateColumnDto);
-  }
+    const { id } = params;
 
-  @HttpCode(HttpStatus.OK)
-  @Delete(':columnId/:cardId')
-  async deleteTodo(
-    @Param() params: { columnId: string; cardId: string },
-    @Req() req: Request,
-  ) {
-    this.cookieService.validateCookie(req, COOKIE_NAMES.sessionId);
-
-    await this.columnsService.deleteCard(params.columnId, params.cardId);
-
-    return;
+    return this.columnsService.updateColumn(id, updateColumnDto);
   }
 
   @HttpCode(HttpStatus.OK)
   @Post('move')
   async moveCard(@Body() moveCardDto: MoveCardDto) {
     await this.columnsService.moveCard(moveCardDto);
-
-    return;
-  }
-
-  @Get('card/:columnId/:cardId')
-  async getTodo(
-    @Param() params: { columnId: string; cardId: string },
-    @Req() req: Request,
-  ): ApiResponse<Todo> {
-    this.cookieService.validateCookie(req, COOKIE_NAMES.sessionId);
-
-    return await this.columnsService.findCard(params.cardId, params.columnId);
-  }
-
-  @HttpCode(HttpStatus.OK)
-  @Patch('card/:columnId/:cardId')
-  async updateTodo(
-    @Param() params: { columnId: string; cardId: string },
-    @Body() updateTodoDto: TodoDocument,
-    @Req() req: Request,
-  ) {
-    const { columnId, cardId } = params;
-    this.cookieService.validateCookie(req, COOKIE_NAMES.sessionId);
-
-    await this.columnsService.updateCard({
-      columnId,
-      cardId,
-      updateTodoDto,
-    });
 
     return;
   }

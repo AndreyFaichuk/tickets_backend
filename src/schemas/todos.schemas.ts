@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { IsMongoId, IsNotEmpty, IsNumber, IsString } from 'class-validator';
-import { HydratedDocument } from 'mongoose';
+import mongoose, { HydratedDocument } from 'mongoose';
 
 export type TodoDocument = HydratedDocument<Todo>;
 
@@ -30,14 +30,12 @@ export class Todo {
   progress: number;
 
   @Prop({
-    isRequired: true,
+    type: mongoose.Types.ObjectId,
+    ref: 'Column',
+    required: true,
   })
-  @IsNotEmpty()
-  @IsString()
-  columnId: string;
-
   @IsMongoId()
-  _id: string;
+  columnId: string;
 }
 
 export const TodoSchema = SchemaFactory.createForClass(Todo);
