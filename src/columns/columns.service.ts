@@ -7,7 +7,6 @@ import { ApiResponse } from 'src/types';
 import { CustomException } from 'src/exceptions/customExeption.exeption';
 import { UpdateColumnDto } from './dto/updateColumn.dto';
 import { MoveCardDto } from './dto/moveCard.dto';
-import { Todo, TodoDocument } from 'src/schemas/todos.schemas';
 
 @Injectable()
 export class ColumnsService {
@@ -16,7 +15,7 @@ export class ColumnsService {
   async create(
     createColumnDto: CreateColumnDto,
     userId: string,
-  ): Promise<ApiResponse<Column>> {
+  ): ApiResponse<Column> {
     const isValidId = mongoose.isValidObjectId(userId);
 
     if (!isValidId) {
@@ -34,7 +33,7 @@ export class ColumnsService {
     return await newColumn.save();
   }
 
-  async findAll(userId: string): Promise<ApiResponse<Column[]>> {
+  async findAll(userId: string): ApiResponse<Column[]> {
     const isValidId = mongoose.isValidObjectId(userId);
 
     if (!isValidId) {
@@ -44,7 +43,12 @@ export class ColumnsService {
       );
     }
 
-    const columns = await this.columnModel.find({ creatorId: userId });
+    const columns = await this.columnModel
+      .find({ creatorId: userId })
+      .populate({
+        path: 'cards',
+        model: 'Todo',
+      });
 
     return columns.map((column) => {
       const columnObj = column.toObject();
@@ -80,7 +84,7 @@ export class ColumnsService {
   async updateColumn(
     columnId: string,
     updateColumnDto: UpdateColumnDto,
-  ): Promise<Column> {
+  ): ApiResponse<Column> {
     const isValidColumnId = mongoose.isValidObjectId(columnId);
 
     if (!isValidColumnId) {
@@ -90,41 +94,9 @@ export class ColumnsService {
       );
     }
 
-    const column = await this.columnModel.findById(columnId);
-
-    if (updateColumnDto.title) {
-      column.title = updateColumnDto.title;
-    }
-
-    if (updateColumnDto.card) {
-      column.cards = [...column.cards, updateColumnDto.card];
-    }
-
-    return await column.save();
-  }
-
-  async deleteCard(columnId: string, cardId: string): ApiResponse<Column> {
-    const isValidColumnId = mongoose.isValidObjectId(columnId);
-    const isValidCardId = mongoose.isValidObjectId(cardId);
-
-    if (!isValidColumnId || !isValidCardId) {
-      throw new CustomException(
-        'Please, provide a valid Id!',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    const updatedColumn = await this.columnModel.findByIdAndUpdate(
-      columnId,
-      { $pull: { cards: { _id: cardId } } },
-      { new: true },
-    );
-
-    if (!updatedColumn) {
-      throw new CustomException('Column not found!', HttpStatus.NOT_FOUND);
-    }
-
-    return updatedColumn;
+    return this.columnModel.findByIdAndUpdate(columnId, updateColumnDto, {
+      returnOriginal: false,
+    });
   }
 
   async moveCard(moveCardDto: MoveCardDto): ApiResponse<void> {
@@ -176,61 +148,5 @@ export class ColumnsService {
 
     await fromColumn.save();
     await toColumn.save();
-  }
-
-  async findCard(cardId: string, columnId: string): ApiResponse<Todo> {
-    if (
-      !mongoose.isValidObjectId(cardId) ||
-      !mongoose.isValidObjectId(columnId)
-    ) {
-      throw new CustomException(
-        'Please, provide a valid Id!',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    const todos = await this.columnModel.findById(columnId, {
-      cards: { $elemMatch: { _id: cardId } },
-    });
-
-    return todos.cards[0];
-  }
-
-  async updateCard({
-    cardId,
-    columnId,
-    updateTodoDto,
-  }: {
-    cardId: string;
-    columnId: string;
-    updateTodoDto: TodoDocument;
-  }) {
-    if (
-      !mongoose.isValidObjectId(cardId) ||
-      !mongoose.isValidObjectId(columnId)
-    ) {
-      throw new CustomException(
-        'Please, provide a valid Id!',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    await this.columnModel.findOneAndUpdate(
-      {
-        _id: columnId,
-        'cards._id': cardId,
-      },
-      {
-        $set: {
-          'cards.$': updateTodoDto,
-        },
-      },
-      {
-        new: true,
-        runValidators: true,
-      },
-    );
-
-    return;
   }
 }

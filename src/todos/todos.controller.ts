@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 
 import { TodosService } from './todos.servise';
-import { Todo, TodoDocument } from 'src/schemas/todos.schemas';
+import { Todo } from 'src/schemas/todos.schemas';
 import { CreateTodoDto } from './dto/createTodo.dto';
 import { ApiResponse } from 'src/types';
 import { CookieService } from 'src/cookie/cookie.service';
@@ -24,56 +24,48 @@ export class TodosController {
     private readonly cookieService: CookieService,
   ) {}
 
-  @Get('/all')
-  async getAllTodos(@Req() req: Request): ApiResponse<Todo[]> {
-    const userId = this.cookieService.validateCookie(
-      req,
-      COOKIE_NAMES.sessionId,
-    );
-
-    return await this.todosService.findAll(userId);
-  }
-
-  @Get(':_id')
+  @Get(':id')
   async getTodo(
-    @Param() params: { _id: string },
+    @Param() params: { id: string },
     @Req() req: Request,
   ): ApiResponse<Todo> {
     this.cookieService.validateCookie(req, COOKIE_NAMES.sessionId);
 
-    return await this.todosService.findOne(params._id);
+    return await this.todosService.findOne(params.id);
   }
 
-  @Post('/create')
+  @Post(':columnId')
   async createTodo(
+    @Param() params: { columnId: string },
     @Body() createTodoDto: CreateTodoDto,
     @Req() req: Request,
   ): ApiResponse<Todo> {
-    const userId = this.cookieService.validateCookie(
-      req,
-      COOKIE_NAMES.sessionId,
-    );
+    const { columnId } = params;
+    this.cookieService.validateCookie(req, COOKIE_NAMES.sessionId);
 
-    return await this.todosService.create(createTodoDto, userId);
+    return await this.todosService.create(createTodoDto, columnId);
   }
 
-  @Patch('/update')
+  @Patch(':id')
   async updateTodo(
-    @Body() updateTodoDto: TodoDocument,
+    @Param() params: { id: string },
+    @Body() updateTodoDto: Todo,
     @Req() req: Request,
   ): ApiResponse<Todo> {
+    const { id } = params;
     this.cookieService.validateCookie(req, COOKIE_NAMES.sessionId);
 
-    return await this.todosService.update(updateTodoDto);
+    return await this.todosService.update(updateTodoDto, id);
   }
 
-  @Delete(':_id')
+  @Delete(':id/:columnId')
   async deleteTodo(
-    @Param() params: { _id: string },
+    @Param() params: { id: string; columnId: string },
     @Req() req: Request,
   ): ApiResponse<Todo> {
+    const { id, columnId } = params;
     this.cookieService.validateCookie(req, COOKIE_NAMES.sessionId);
 
-    return await this.todosService.delete(params._id);
+    return await this.todosService.delete(id, columnId);
   }
 }

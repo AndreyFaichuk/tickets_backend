@@ -2,31 +2,45 @@ import mongoose, { Model } from 'mongoose';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
-import { Todo, TodoDocument } from 'src/schemas/todos.schemas';
+import { Todo } from 'src/schemas/todos.schemas';
 import { CreateTodoDto } from './dto/createTodo.dto';
 import { CustomException } from 'src/exceptions/customExeption.exeption';
 import { ApiResponse } from 'src/types';
+import { Column } from 'src/schemas/columns.schema';
 
 @Injectable()
 export class TodosService {
-  constructor(@InjectModel(Todo.name) private todoModel: Model<Todo>) {}
+  constructor(
+    @InjectModel(Todo.name) private todoModel: Model<Todo>,
+    @InjectModel(Column.name) private columnModel: Model<Column>,
+  ) {}
 
   async create(
     createTodoDto: CreateTodoDto,
-    userId: string,
+    columnId: string,
   ): ApiResponse<Todo> {
-    const newTodo: Todo = { ...createTodoDto, columnId: userId, _id: '' };
+    if (!mongoose.isValidObjectId(columnId)) {
+      throw new CustomException('Invalid column ID!', HttpStatus.BAD_REQUEST);
+    }
 
-    const createdTodo = new this.todoModel(newTodo);
-    return createdTodo.save();
+    const newTodo = new this.todoModel({
+      ...createTodoDto,
+      columnId,
+    });
+
+    const createdTodo = await newTodo.save();
+
+    await this.columnModel.findByIdAndUpdate(
+      columnId,
+      { $push: { cards: createdTodo._id } },
+      { new: true },
+    );
+
+    return createdTodo;
   }
 
-  async findAll(userId: string): ApiResponse<Todo[]> {
-    return this.todoModel.find({ creatorId: userId });
-  }
-
-  async update(updateTodoDto: TodoDocument): ApiResponse<Todo> {
-    const isValidId = mongoose.isValidObjectId(updateTodoDto._id);
+  async update(updateTodoDto: Todo, id: string): ApiResponse<Todo> {
+    const isValidId = mongoose.isValidObjectId(id);
 
     if (!isValidId) {
       throw new CustomException(
@@ -35,13 +49,13 @@ export class TodosService {
       );
     }
 
-    return this.todoModel.findByIdAndUpdate(updateTodoDto._id, updateTodoDto, {
+    return this.todoModel.findByIdAndUpdate(id, updateTodoDto, {
       returnOriginal: false,
     });
   }
 
-  async findOne(_id: string): ApiResponse<Todo> {
-    const isValidId = mongoose.isValidObjectId(_id);
+  async findOne(id: string): ApiResponse<Todo> {
+    const isValidId = mongoose.isValidObjectId(id);
 
     if (!isValidId) {
       throw new CustomException(
@@ -50,26 +64,30 @@ export class TodosService {
       );
     }
 
-    return this.todoModel.findById(_id);
+    return this.todoModel.findById(id);
   }
 
-  async delete(_id: string): ApiResponse<Todo> {
-    const isValidId = mongoose.isValidObjectId(_id);
-
-    if (!isValidId) {
+  async delete(id: string, columnId: string): ApiResponse<Todo> {
+    if (!mongoose.isValidObjectId(id) || !mongoose.isValidObjectId(columnId)) {
       throw new CustomException(
         'Please, provide a valid Id!',
         HttpStatus.BAD_REQUEST,
       );
     }
 
-    const res = await this.todoModel.findByIdAndDelete(_id);
+    const res = await this.todoModel.findByIdAndDelete(id);
     if (!res) {
       throw new CustomException(
-        `Todo with id ${_id} not found!`,
+        `Todo with id ${id} not found!`,
         HttpStatus.NOT_FOUND,
       );
     }
+
+    await this.columnModel.findByIdAndUpdate(
+      columnId,
+      { $pull: { cards: new mongoose.Types.ObjectId(id) } },
+      { safe: true, multi: false, new: true },
+    );
 
     return res;
   }
