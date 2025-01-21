@@ -1,11 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { IsMongoId, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import mongoose, { HydratedDocument } from 'mongoose';
+import { PriorityType } from 'src/todos/todos.constants';
 
 export type TodoDocument = HydratedDocument<Todo>;
 
 @Schema({
   versionKey: false,
+  timestamps: { createdAt: 'created_at' },
 })
 export class Todo {
   @Prop({
@@ -36,6 +38,12 @@ export class Todo {
   })
   @IsMongoId()
   columnId: string;
+
+  @Prop({
+    required: true,
+  })
+  @IsNotEmpty()
+  priority: PriorityType;
 }
 
 export const TodoSchema = SchemaFactory.createForClass(Todo);
