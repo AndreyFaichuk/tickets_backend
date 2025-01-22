@@ -16,6 +16,8 @@ import { CookieService } from './cookie/cookie.service';
 import { ColumnsController } from './columns/columns.controller';
 import { ColumnsService } from './columns/columns.service';
 import { Column, ColumnSchema } from './schemas/columns.schema';
+import { UploadService } from './upload/upload.service';
+import { AvatarService } from './avatar/avatar.service';
 @Module({
   imports: [
     HttpModule,
@@ -41,6 +43,8 @@ import { Column, ColumnSchema } from './schemas/columns.schema';
     AuthService,
     CookieService,
     ColumnsService,
+    UploadService,
+    AvatarService,
   ],
 })
 export class AppModule {

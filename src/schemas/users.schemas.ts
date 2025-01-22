@@ -6,6 +6,7 @@ import {
   IsNotEmpty,
   IsString,
   Length,
+  IsUrl,
 } from 'class-validator';
 import { HydratedDocument } from 'mongoose';
 
@@ -52,6 +53,11 @@ export class User {
   @IsNotEmpty()
   @IsDateString()
   dateOfBirth: string;
+
+  @Prop({ required: true })
+  @IsNotEmpty()
+  @IsUrl()
+  avatarUrl: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
