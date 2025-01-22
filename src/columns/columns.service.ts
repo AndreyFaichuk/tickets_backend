@@ -33,22 +33,11 @@ export class ColumnsService {
     return await newColumn.save();
   }
 
-  async findAll(userId: string): ApiResponse<Column[]> {
-    const isValidId = mongoose.isValidObjectId(userId);
-
-    if (!isValidId) {
-      throw new CustomException(
-        'Please, provide a valid Id!',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-
-    const columns = await this.columnModel
-      .find({ creatorId: userId })
-      .populate({
-        path: 'cards',
-        model: 'Todo',
-      });
+  async findAll(): ApiResponse<Column[]> {
+    const columns = await this.columnModel.find().populate({
+      path: 'cards',
+      model: 'Todo',
+    });
 
     return columns.map((column) => {
       const columnObj = column.toObject();

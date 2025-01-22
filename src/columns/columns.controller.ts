@@ -42,12 +42,9 @@ export class ColumnsController {
 
   @Get('all')
   async getAllColumns(@Req() req: Request): ApiResponse<Column[]> {
-    const userId = this.cookieService.validateCookie(
-      req,
-      COOKIE_NAMES.sessionId,
-    );
+    this.cookieService.validateCookie(req, COOKIE_NAMES.sessionId);
 
-    return await this.columnsService.findAll(userId);
+    return await this.columnsService.findAll();
   }
 
   @Delete(':id')
