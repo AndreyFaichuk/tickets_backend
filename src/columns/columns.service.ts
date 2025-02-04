@@ -89,8 +89,7 @@ export class ColumnsService {
   }
 
   async moveCard(moveCardDto: MoveCardDto): ApiResponse<void> {
-    const { fromColumnId, toColumnId, todoId, fromTodoIndex, toTodoIndex } =
-      moveCardDto;
+    const { fromColumnId, toColumnId, todoId, toTodoIndex } = moveCardDto;
 
     if (
       !mongoose.isValidObjectId(fromColumnId) ||
@@ -104,38 +103,32 @@ export class ColumnsService {
     }
 
     const fromColumn = await this.columnModel.findById(fromColumnId);
-
-    if (fromColumnId === toColumnId) {
-      const element = fromColumn.cards.splice(fromTodoIndex, 1);
-
-      fromColumn.cards.splice(toTodoIndex, 0, element[0]);
-
-      await fromColumn.save();
-
-      return;
-    }
-
     const toColumn = await this.columnModel.findById(toColumnId);
 
     if (!fromColumn || !toColumn) {
       throw new CustomException('Column not found!', HttpStatus.NOT_FOUND);
     }
 
-    const todo = fromColumn.cards.find(
+    const todoIndex = fromColumn.cards.findIndex(
       (card) => card._id.toString() === todoId,
     );
 
-    if (!todo) {
+    if (todoIndex === -1) {
       throw new CustomException(
         'Todo not found in the specified column!',
         HttpStatus.NOT_FOUND,
       );
     }
 
-    fromColumn.cards.splice(fromTodoIndex, 1);
-    toColumn.cards.splice(toTodoIndex, 0, todo);
-
+    const [todo] = fromColumn.cards.splice(todoIndex, 1);
     await fromColumn.save();
-    await toColumn.save();
+
+    if (fromColumnId === toColumnId) {
+      fromColumn.cards.splice(toTodoIndex, 0, todo);
+      await fromColumn.save();
+    } else {
+      toColumn.cards.splice(toTodoIndex, 0, todo);
+      await toColumn.save();
+    }
   }
 }

@@ -13,4 +13,9 @@ export class CreateTodoDto {
 
   @ApiProperty({ example: 'low, middle or high' })
   priority: PriorityType;
+
+  @ApiProperty({
+    example: { name: 'file', size: 55555 } as File,
+  })
+  attachments: File[];
 }
