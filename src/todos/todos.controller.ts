@@ -8,6 +8,8 @@ import {
   Patch,
   Post,
   Req,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
 
 import { TodosService } from './todos.servise';
@@ -16,6 +18,7 @@ import { CreateTodoDto } from './dto/createTodo.dto';
 import { ApiResponse } from 'src/types';
 import { CookieService } from 'src/cookie/cookie.service';
 import { COOKIE_NAMES } from 'src/cookie/cookie.constants';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 
 @Controller('todos')
 export class TodosController {
@@ -35,27 +38,37 @@ export class TodosController {
   }
 
   @Post(':columnId')
+  @UseInterceptors(
+    FileFieldsInterceptor([{ name: 'attachments', maxCount: 5 }]),
+  )
   async createTodo(
     @Param() params: { columnId: string },
     @Body() createTodoDto: CreateTodoDto,
     @Req() req: Request,
+    @UploadedFiles() files: { attachments: Express.Multer.File[] },
   ): ApiResponse<Todo> {
     const { columnId } = params;
+    const { attachments } = files;
     this.cookieService.validateCookie(req, COOKIE_NAMES.sessionId);
 
-    return await this.todosService.create(createTodoDto, columnId);
+    return await this.todosService.create(createTodoDto, columnId, attachments);
   }
 
   @Patch(':id')
+  @UseInterceptors(
+    FileFieldsInterceptor([{ name: 'attachments', maxCount: 5 }]),
+  )
   async updateTodo(
     @Param() params: { id: string },
     @Body() updateTodoDto: Todo,
     @Req() req: Request,
+    @UploadedFiles() files: { attachments: Express.Multer.File[] },
   ): ApiResponse<Todo> {
     const { id } = params;
+    const { attachments } = files;
     this.cookieService.validateCookie(req, COOKIE_NAMES.sessionId);
 
-    return await this.todosService.update(updateTodoDto, id);
+    return await this.todosService.update(updateTodoDto, id, attachments);
   }
 
   @Delete(':id/:columnId')

@@ -40,9 +40,12 @@ export class UsersService {
 
     const avatarName = `${registrationUser.firstName}_${registrationUser.lastName}.png`;
 
-    await this.uploadService.upload(avatarName, avatarBuffer);
+    await this.uploadService.upload({
+      fileName: avatarName,
+      file: avatarBuffer,
+    });
 
-    const avatarUrl = await this.uploadService.getFileUrl(avatarName);
+    const avatarUrl = this.uploadService.getFileUrl({ key: avatarName });
 
     const userWithGeneratedAvatar = { ...registrationUser, avatarUrl };
 

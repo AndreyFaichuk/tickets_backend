@@ -14,10 +14,6 @@ export class MoveCardDto {
   @IsMongoId()
   todoId: string;
 
-  @ApiProperty({ example: 0 })
-  @IsInt()
-  fromTodoIndex: number;
-
   @ApiProperty({ example: 1 })
   @IsInt()
   toTodoIndex: number;
