@@ -1,7 +1,12 @@
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectsCommand,
+  ListObjectsV2Command,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { AWS_S3_BUCKETS } from 'src/constants';
 
 @Injectable()
@@ -52,5 +57,31 @@ export class UploadService {
     const fileUrl = `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
 
     return fileUrl;
+  }
+
+  async delete(prefix: string, bucket: string, region: string) {
+    const s3Client = this.createS3Client(region);
+
+    const listObjectsCommand = new ListObjectsV2Command({
+      Bucket: bucket,
+      Prefix: prefix,
+    });
+
+    const listResponse = await s3Client.send(listObjectsCommand);
+
+    if (!listResponse.Contents || listResponse.Contents.length === 0) {
+      return;
+    }
+
+    const objectsToDelete = listResponse.Contents.map((obj) => ({
+      Key: obj.Key,
+    }));
+
+    const deleteObjectsCommand = new DeleteObjectsCommand({
+      Bucket: bucket,
+      Delete: { Objects: objectsToDelete },
+    });
+
+    await s3Client.send(deleteObjectsCommand);
   }
 }

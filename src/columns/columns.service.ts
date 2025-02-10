@@ -7,6 +7,7 @@ import { ApiResponse } from 'src/types';
 import { CustomException } from 'src/exceptions/customExeption.exeption';
 import { UpdateColumnDto } from './dto/updateColumn.dto';
 import { MoveCardDto } from './dto/moveCard.dto';
+import { ReplaceAllCardsToColumnDto } from './dto/replaceAllTodosToColumn.dto';
 
 @Injectable()
 export class ColumnsService {
@@ -130,5 +131,44 @@ export class ColumnsService {
       toColumn.cards.splice(toTodoIndex, 0, todo);
       await toColumn.save();
     }
+  }
+
+  async replaceCards(
+    replaceAllCardsToColumnDto: ReplaceAllCardsToColumnDto,
+  ): Promise<Column> {
+    const { fromColumnId, toColumnId } = replaceAllCardsToColumnDto;
+
+    if (
+      !mongoose.isValidObjectId(fromColumnId) ||
+      !mongoose.isValidObjectId(toColumnId)
+    ) {
+      throw new CustomException(
+        'Please, provide a valid column Id!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const fromColumn = await this.columnModel.findById(fromColumnId);
+
+    if (!fromColumn) {
+      throw new CustomException(
+        'Source column not found!',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const cardIds = fromColumn.cards;
+
+    await this.columnModel.updateOne(
+      { _id: toColumnId },
+      { $push: { cards: { $each: cardIds } } },
+    );
+
+    await this.columnModel.updateOne(
+      { _id: fromColumnId },
+      { $set: { cards: [] } },
+    );
+
+    return await this.columnModel.findById(toColumnId);
   }
 }

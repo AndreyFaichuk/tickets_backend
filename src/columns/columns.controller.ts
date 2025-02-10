@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Req,
 } from '@nestjs/common';
 import { Request } from 'express';
@@ -19,6 +20,7 @@ import { Column } from 'src/schemas/columns.schema';
 import { ColumnsService } from './columns.service';
 import { UpdateColumnDto } from './dto/updateColumn.dto';
 import { MoveCardDto } from './dto/moveCard.dto';
+import { ReplaceAllCardsToColumnDto } from './dto/replaceAllTodosToColumn.dto';
 
 @Controller('columns')
 export class ColumnsController {
@@ -65,6 +67,13 @@ export class ColumnsController {
     const { id } = params;
 
     return this.columnsService.updateColumn(id, updateColumnDto);
+  }
+
+  @Put('replace')
+  async replaceAllCardsToColumn(
+    @Body() replaceAllCardsToColumnDto: ReplaceAllCardsToColumnDto,
+  ): ApiResponse<Column> {
+    return this.columnsService.replaceCards(replaceAllCardsToColumnDto);
   }
 
   @HttpCode(HttpStatus.OK)
