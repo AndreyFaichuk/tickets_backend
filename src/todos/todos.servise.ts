@@ -70,6 +70,22 @@ export class TodosService {
     }
 
     if (attachments) {
+      const prefix = `${id}/`;
+
+      const attachmentBucket = this.configService.getOrThrow(
+        AWS_S3_BUCKETS.attachments.bucket,
+      );
+
+      const attachmentRegion = this.configService.getOrThrow(
+        AWS_S3_BUCKETS.attachments.region,
+      );
+
+      await this.uploadService.delete(
+        prefix,
+        attachmentBucket,
+        attachmentRegion,
+      );
+
       const attachmentsUrls = await this.uploadAttachments(id, attachments);
 
       updateTodoDto.attachmentsUrls = attachmentsUrls;
@@ -102,14 +118,34 @@ export class TodosService {
         HttpStatus.BAD_REQUEST,
       );
     }
+    const todoForDelete = await this.findOne(id);
 
-    const res = await this.todoModel.findByIdAndDelete(id);
-    if (!res) {
+    if (!todoForDelete) {
       throw new CustomException(
         `Todo with id ${id} not found!`,
         HttpStatus.NOT_FOUND,
       );
     }
+
+    if (todoForDelete.attachmentsUrls.length > 0) {
+      const attachmentBucket = this.configService.getOrThrow(
+        AWS_S3_BUCKETS.attachments.bucket,
+      );
+
+      const attachmentRegion = this.configService.getOrThrow(
+        AWS_S3_BUCKETS.attachments.region,
+      );
+
+      const prefix = `${id}/`;
+
+      await this.uploadService.delete(
+        prefix,
+        attachmentBucket,
+        attachmentRegion,
+      );
+    }
+
+    const res = await this.todoModel.findByIdAndDelete(id);
 
     await this.columnModel.findByIdAndUpdate(
       columnId,
