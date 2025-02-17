@@ -18,6 +18,9 @@ import { ColumnsService } from './columns/columns.service';
 import { Column, ColumnSchema } from './schemas/columns.schema';
 import { UploadService } from './upload/upload.service';
 import { AvatarService } from './avatar/avatar.service';
+import { CommentsController } from './comments/comments.controller';
+import { CommentsService } from './comments/comments.service';
+import { Comment, CommentSchema } from './schemas/comments.schema';
 @Module({
   imports: [
     HttpModule,
@@ -29,6 +32,7 @@ import { AvatarService } from './avatar/avatar.service';
       { name: Todo.name, schema: TodoSchema },
       { name: User.name, schema: UserSchema },
       { name: Column.name, schema: ColumnSchema },
+      { name: Comment.name, schema: CommentSchema },
     ]),
   ],
   controllers: [
@@ -36,6 +40,7 @@ import { AvatarService } from './avatar/avatar.service';
     UsersController,
     AuthController,
     ColumnsController,
+    CommentsController,
   ],
   providers: [
     TodosService,
@@ -45,6 +50,7 @@ import { AvatarService } from './avatar/avatar.service';
     ColumnsService,
     UploadService,
     AvatarService,
+    CommentsService,
   ],
 })
 export class AppModule {
