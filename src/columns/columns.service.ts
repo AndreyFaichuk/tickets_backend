@@ -8,10 +8,14 @@ import { CustomException } from 'src/exceptions/customExeption.exeption';
 import { UpdateColumnDto } from './dto/updateColumn.dto';
 import { MoveCardDto } from './dto/moveCard.dto';
 import { ReplaceAllCardsToColumnDto } from './dto/replaceAllTodosToColumn.dto';
+import { Todo } from 'src/schemas/todos.schemas';
 
 @Injectable()
 export class ColumnsService {
-  constructor(@InjectModel(Column.name) private columnModel: Model<Column>) {}
+  constructor(
+    @InjectModel(Column.name) private columnModel: Model<Column>,
+    @InjectModel(Todo.name) private todoModel: Model<Todo>,
+  ) {}
 
   async create(
     createColumnDto: CreateColumnDto,
@@ -121,6 +125,8 @@ export class ColumnsService {
       );
     }
 
+    await this.todoModel.findByIdAndUpdate(todoId, { columnId: toColumnId });
+
     const [todo] = fromColumn.cards.splice(todoIndex, 1);
     await fromColumn.save();
 
@@ -135,7 +141,7 @@ export class ColumnsService {
 
   async replaceCards(
     replaceAllCardsToColumnDto: ReplaceAllCardsToColumnDto,
-  ): Promise<Column> {
+  ): ApiResponse<Column> {
     const { fromColumnId, toColumnId } = replaceAllCardsToColumnDto;
 
     if (
@@ -158,6 +164,11 @@ export class ColumnsService {
     }
 
     const cardIds = fromColumn.cards;
+
+    await this.todoModel.updateMany(
+      { columnId: fromColumnId },
+      { columnId: toColumnId },
+    );
 
     await this.columnModel.updateOne(
       { _id: toColumnId },
