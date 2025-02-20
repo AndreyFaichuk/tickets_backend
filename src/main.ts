@@ -14,7 +14,10 @@ async function bootstrap() {
 
   app.use(cookieParser());
 
-  app.enableCors({ credentials: true, origin: 'http://localhost:8080' });
+  app.enableCors({
+    credentials: true,
+    origin: ['http://localhost:8080', 'http://18.214.91.17:8080'],
+  });
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
