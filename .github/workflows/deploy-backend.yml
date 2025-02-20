@@ -1,0 +1,32 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup SSH key for VPS
+        run: |
+          mkdir -p ~/.ssh
+          printf "%s" "${{ secrets.AWS_SSH_PRIVATE_KEY }}" > ~/.ssh/tickets-pair.pem
+          chmod 600 ~/.ssh/tickets-pair.pem
+          ssh-keyscan -t rsa -H ec2-18-214-91-17.compute-1.amazonaws.com >> ~/.ssh/known_hosts
+
+      - name: Deploy to VPS
+        run: |
+          ssh -i ~/.ssh/tickets-pair.pem -o IdentitiesOnly=yes ubuntu@ec2-18-214-91-17.compute-1.amazonaws.com << 'EOF'
+            cd project/tickets_backend
+            git pull origin main
+            cd ..
+            docker-compose down --rmi all
+            chmod +x ./start-prod.sh
+            ./start-prod.sh
+          EOF
