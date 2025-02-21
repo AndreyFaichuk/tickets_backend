@@ -7,14 +7,49 @@ project/
   tickets_backend/
   tickets_frontend/
   docker-compose.yml
+  start-dev.sh
+  start-prod.sh
 ```
+
+## Scripts
+
+start-dev.sh
+
+```
+docker-compose up -d --build tickets_frontend_dev tickets_backend_dev
+```
+
+start-prod.sh
+
+```
+docker-compose up -d --build tickets_frontend_prod tickets_backend_prod
+```
+
+## Services Included
+
+This setup includes the following services:
+
+- **Frontend**: React application running with Vite.
+- **Backend**: Node.js application using NestJS.
+- **Database Dev**: Local instance of MongoDB.
+- **Database Prod**: Cloud instance of MongoDB Atlas.
+
+## Flow (CI/CD)
+
+1. **CI Process**: Check PRs before merging into the **main** branch, including linting, and types checks.
+2. **CD Process**: Once the prepared PR is merged into the main branch, the CD process begins, deploying to the AWS VPS instance.
 
 ## Docker Compose Configuration
 
 ```yaml
+version: '3.8'
+
 services:
-  tickets_frontend:
-    build: ./tickets_frontend
+  # Dev (Vite)
+  tickets_frontend_dev:
+    build:
+      context: ./tickets_frontend
+      dockerfile: Dockerfile.dev
     ports:
       - '8080:8080'
     volumes:
@@ -22,16 +57,43 @@ services:
       - /app/node_modules
     command: npm run dev
     depends_on:
-      - tickets_backend
+      - tickets_backend_dev
 
-  tickets_backend:
-    build: ./tickets_backend
+  # Prod (Nginx)
+  tickets_frontend_prod:
+    build:
+      context: ./tickets_frontend
+      dockerfile: Dockerfile.prod
+    ports:
+      - '8080:8080'
+    depends_on:
+      - tickets_backend_prod
+
+  # Backend Dev
+  tickets_backend_dev:
+    build:
+      context: ./tickets_backend
+      dockerfile: Dockerfile.dev
     ports:
       - '3000:3000'
     env_file:
-      - ./tickets_backend/.env
+      - ./tickets_backend/.env.dev
+    volumes:
+      - ./tickets_backend:/app
+      - /app/node_modules
+    command: npm run start:dev
     depends_on:
       - mongo
+
+  # Backend Prod
+  tickets_backend_prod:
+    build:
+      context: ./tickets_backend
+      dockerfile: Dockerfile.prod
+    ports:
+      - '3000:3000'
+    env_file:
+      - ./tickets_backend/.env.prod
 
   mongo:
     image: mongo
@@ -42,46 +104,6 @@ services:
 
 volumes:
   mongo-data:
-```
-
-## Services Included
-
-This setup includes the following services:
-
-- **Frontend**: React application running with Vite.
-- **Backend**: Node.js application using NestJS.
-- **Database**: Local instance of MongoDB.
-
-## Useful Commands
-
-### Start the services
-
-```sh
-docker-compose up -d --build
-```
-
-### Stop the services
-
-```sh
-docker-compose down
-```
-
-### View logs
-
-```sh
-docker-compose logs -f
-```
-
-### Restart the services
-
-```sh
-docker-compose restart
-```
-
-### Remove all containers, networks, and volumes
-
-```sh
-docker-compose down -v
 ```
 
 ## Repositories

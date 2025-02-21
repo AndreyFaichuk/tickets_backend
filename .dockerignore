@@ -1,3 +1,7 @@
 node_modules
+*.log
+*.ts
+.git
+.env.dev
+.env.prod
 dist
-.env
