@@ -29,4 +29,5 @@ jobs:
             docker-compose down --rmi all
             chmod +x ./start-prod.sh
             ./start-prod.sh
+            docker image prune -f
           EOF
