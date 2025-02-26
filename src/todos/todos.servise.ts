@@ -11,12 +11,15 @@ import { Column } from 'src/schemas/columns.schema';
 import { UploadService } from 'src/upload/upload.service';
 import { ConfigService } from '@nestjs/config';
 import { AWS_S3_BUCKETS, FILE_TYPES_MAP } from 'src/constants';
+import { validateObjectId } from 'src/utils';
+import { Workspace } from 'src/schemas/workspaces.schema';
 
 @Injectable()
 export class TodosService {
   constructor(
     @InjectModel(Todo.name) private todoModel: Model<Todo>,
     @InjectModel(Column.name) private columnModel: Model<Column>,
+    @InjectModel(Workspace.name) private workspaceModel: Model<Workspace>,
     private readonly uploadService: UploadService,
     private readonly configService: ConfigService,
   ) {}
@@ -26,9 +29,7 @@ export class TodosService {
     columnId: string,
     attachments?: Express.Multer.File[],
   ): ApiResponse<Todo> {
-    if (!mongoose.isValidObjectId(columnId)) {
-      throw new CustomException('Invalid column ID!', HttpStatus.BAD_REQUEST);
-    }
+    validateObjectId(columnId);
 
     const newTodo = new this.todoModel({
       ...createTodoDto,
@@ -46,10 +47,15 @@ export class TodosService {
 
     const createdTodo = await newTodo.save();
 
-    await this.columnModel.findByIdAndUpdate(
+    const updatedColumn = await this.columnModel.findByIdAndUpdate(
       columnId,
       { $push: { cards: createdTodo._id } },
       { new: true },
+    );
+
+    await this.workspaceModel.updateOne(
+      { _id: updatedColumn.workspaceId },
+      { $inc: { totalTickets: 1 } },
     );
 
     return createdTodo;
@@ -60,14 +66,7 @@ export class TodosService {
     id: string,
     attachments?: Express.Multer.File[],
   ): ApiResponse<Todo> {
-    const isValidId = mongoose.isValidObjectId(id);
-
-    if (!isValidId) {
-      throw new CustomException(
-        'Please, provide a valid Id!',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    validateObjectId(id);
 
     if (attachments) {
       const prefix = `${id}/`;
@@ -99,14 +98,7 @@ export class TodosService {
   }
 
   async findOne(id: string): ApiResponse<Todo> {
-    const isValidId = mongoose.isValidObjectId(id);
-
-    if (!isValidId) {
-      throw new CustomException(
-        'Please, provide a valid Id!',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    validateObjectId(id);
 
     return this.todoModel.findById(id);
   }
@@ -147,11 +139,15 @@ export class TodosService {
 
     const res = await this.todoModel.findByIdAndDelete(id);
 
-    await this.columnModel.findByIdAndUpdate(
+    const column = await this.columnModel.findByIdAndUpdate(
       columnId,
       { $pull: { cards: new mongoose.Types.ObjectId(id) } },
       { safe: true, multi: false, new: true },
     );
+
+    await this.workspaceModel.findByIdAndUpdate(column.workspaceId, {
+      $inc: { totalTickets: -1 },
+    });
 
     return res;
   }

@@ -42,11 +42,16 @@ export class ColumnsController {
     return await this.columnsService.create(createColumnDto, userId);
   }
 
-  @Get('all')
-  async getAllColumns(@Req() req: Request): ApiResponse<Column[]> {
+  @Get('all/:workspaceId')
+  async getAllColumns(
+    @Req() req: Request,
+    @Param() params: { workspaceId: string },
+  ): ApiResponse<Column[]> {
+    const { workspaceId } = params;
+
     this.cookieService.validateCookie(req, COOKIE_NAMES.sessionId);
 
-    return await this.columnsService.findAll();
+    return await this.columnsService.findAll(workspaceId);
   }
 
   @Delete(':id')

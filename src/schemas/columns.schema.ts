@@ -23,12 +23,18 @@ export class Column {
   cards: Types.ObjectId[];
 
   @Prop({
-    isRequired: true,
-    unique: false,
+    type: Types.ObjectId,
+    ref: 'User',
+    required: true,
   })
-  @IsNotEmpty()
-  @IsString()
-  creatorId: string;
+  creatorId: Types.ObjectId;
+
+  @Prop({
+    type: Types.ObjectId,
+    ref: 'Workspace',
+    required: true,
+  })
+  workspaceId: Types.ObjectId;
 }
 
 export const ColumnSchema = SchemaFactory.createForClass(Column);

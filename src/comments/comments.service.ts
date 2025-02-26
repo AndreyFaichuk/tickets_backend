@@ -5,13 +5,12 @@ import mongoose, { Model } from 'mongoose';
 import { CreateCommentDto } from 'src/columns/dto/createComment.dto';
 import { CustomException } from 'src/exceptions/customExeption.exeption';
 import { Comment } from 'src/schemas/comments.schema';
-import { Todo } from 'src/schemas/todos.schemas';
 import { ApiResponse } from 'src/types';
+import { validateObjectId } from 'src/utils';
 
 @Injectable()
 export class CommentsService {
   constructor(
-    @InjectModel(Todo.name) private todoModel: Model<Todo>,
     @InjectModel(Comment.name) private commentModel: Model<Comment>,
   ) {}
 
@@ -20,16 +19,8 @@ export class CommentsService {
     userId: string,
   ): ApiResponse<Comment> {
     const { todoId } = createComment;
-
-    if (
-      !mongoose.isValidObjectId(userId) ||
-      !mongoose.isValidObjectId(todoId)
-    ) {
-      throw new CustomException(
-        'Please, provide a valid Id!',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    validateObjectId(userId);
+    validateObjectId(todoId);
 
     return this.commentModel.create({
       ...createComment,
@@ -38,12 +29,7 @@ export class CommentsService {
   }
 
   getAll(todoId: string): ApiResponse<Comment[]> {
-    if (!mongoose.isValidObjectId(todoId)) {
-      throw new CustomException(
-        'Please, provide a valid todoId!',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    validateObjectId(todoId);
 
     return this.commentModel.find({ todoId }).populate({
       path: 'creator',
@@ -53,23 +39,13 @@ export class CommentsService {
   }
 
   getOne(commentId: string): ApiResponse<Comment> {
-    if (!mongoose.isValidObjectId(commentId)) {
-      throw new CustomException(
-        'Please, provide a valid commentId!',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    validateObjectId(commentId);
 
     return this.commentModel.findById(commentId);
   }
 
   async delete(commentId: string, userId: string): ApiResponse<Comment> {
-    if (!mongoose.isValidObjectId(commentId)) {
-      throw new CustomException(
-        'Please, provide a valid commentId!',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    validateObjectId(commentId);
 
     const commentForDelete = await this.getOne(commentId);
 
