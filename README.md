@@ -42,8 +42,6 @@ This setup includes the following services:
 ## Docker Compose Configuration
 
 ```yaml
-version: '3.8'
-
 services:
   # Dev (Vite)
   tickets_frontend_dev:
@@ -55,6 +53,8 @@ services:
     volumes:
       - ./tickets_frontend:/app
       - /app/node_modules
+    env_file:
+      - ./tickets_frontend/.env.dev
     command: npm run dev
     depends_on:
       - tickets_backend_dev
@@ -66,6 +66,8 @@ services:
       dockerfile: Dockerfile.prod
     ports:
       - '8080:8080'
+    env_file:
+      - ./tickets_frontend/.env.prod
     depends_on:
       - tickets_backend_prod
 
