@@ -21,6 +21,9 @@ import { AvatarService } from './avatar/avatar.service';
 import { CommentsController } from './comments/comments.controller';
 import { CommentsService } from './comments/comments.service';
 import { Comment, CommentSchema } from './schemas/comments.schema';
+import { WorkspacesController } from './workspaces/workspaces.controller';
+import { WorkspacesService } from './workspaces/workspaces.service';
+import { Workspace, WorkspaceSchema } from './schemas/workspaces.schema';
 @Module({
   imports: [
     HttpModule,
@@ -33,6 +36,7 @@ import { Comment, CommentSchema } from './schemas/comments.schema';
       { name: User.name, schema: UserSchema },
       { name: Column.name, schema: ColumnSchema },
       { name: Comment.name, schema: CommentSchema },
+      { name: Workspace.name, schema: WorkspaceSchema },
     ]),
   ],
   controllers: [
@@ -41,6 +45,7 @@ import { Comment, CommentSchema } from './schemas/comments.schema';
     AuthController,
     ColumnsController,
     CommentsController,
+    WorkspacesController,
   ],
   providers: [
     TodosService,
@@ -51,6 +56,7 @@ import { Comment, CommentSchema } from './schemas/comments.schema';
     UploadService,
     AvatarService,
     CommentsService,
+    WorkspacesService,
   ],
 })
 export class AppModule {

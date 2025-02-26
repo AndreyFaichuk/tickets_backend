@@ -2,8 +2,8 @@ name: Deploy Backend
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
 
 jobs:
   deploy:
@@ -24,7 +24,8 @@ jobs:
         run: |
           ssh -i ~/.ssh/tickets-pair.pem -o IdentitiesOnly=yes ubuntu@ec2-18-214-91-17.compute-1.amazonaws.com << 'EOF'
             cd project/tickets_backend
-            git pull origin main
+            git fetch --tags
+            git checkout ${{ github.ref }}
             cd ..
             docker-compose down --rmi all
             chmod +x ./start-prod.sh
