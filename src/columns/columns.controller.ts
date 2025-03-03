@@ -49,9 +49,12 @@ export class ColumnsController {
   ): ApiResponse<Column[]> {
     const { workspaceId } = params;
 
-    this.cookieService.validateCookie(req, COOKIE_NAMES.sessionId);
+    const userId = this.cookieService.validateCookie(
+      req,
+      COOKIE_NAMES.sessionId,
+    );
 
-    return await this.columnsService.findAll(workspaceId);
+    return await this.columnsService.findAll(userId, workspaceId);
   }
 
   @Delete(':id')

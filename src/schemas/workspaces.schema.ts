@@ -50,5 +50,4 @@ export class Workspace {
   @IsString()
   inviteToken: string;
 }
-
 export const WorkspaceSchema = SchemaFactory.createForClass(Workspace);
