@@ -56,6 +56,14 @@ export class Todo {
   })
   @IsArray()
   attachmentsUrls: string[];
+
+  @Prop({
+    unique: false,
+    default: 0,
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  totalComments: number;
 }
 
 export const TodoSchema = SchemaFactory.createForClass(Todo);

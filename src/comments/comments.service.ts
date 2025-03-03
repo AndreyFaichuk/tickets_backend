@@ -5,6 +5,7 @@ import mongoose, { Model } from 'mongoose';
 import { CreateCommentDto } from 'src/columns/dto/createComment.dto';
 import { CustomException } from 'src/exceptions/customExeption.exeption';
 import { Comment } from 'src/schemas/comments.schema';
+import { TodosService } from 'src/todos/todos.servise';
 import { ApiResponse } from 'src/types';
 import { validateObjectId } from 'src/utils';
 
@@ -12,15 +13,18 @@ import { validateObjectId } from 'src/utils';
 export class CommentsService {
   constructor(
     @InjectModel(Comment.name) private commentModel: Model<Comment>,
+    private readonly todosService: TodosService,
   ) {}
 
-  create(
+  async create(
     createComment: CreateCommentDto,
     userId: string,
   ): ApiResponse<Comment> {
     const { todoId } = createComment;
     validateObjectId(userId);
     validateObjectId(todoId);
+
+    await this.todosService.incrementTotalComments(todoId);
 
     return this.commentModel.create({
       ...createComment,
@@ -44,8 +48,18 @@ export class CommentsService {
     return this.commentModel.findById(commentId);
   }
 
-  async delete(commentId: string, userId: string): ApiResponse<Comment> {
+  async delete({
+    commentId,
+    userId,
+    todoId,
+  }: {
+    commentId: string;
+    userId: string;
+    todoId: string;
+  }): ApiResponse<Comment> {
     validateObjectId(commentId);
+
+    await this.todosService.decrementTotalComments(todoId);
 
     const commentForDelete = await this.getOne(commentId);
 

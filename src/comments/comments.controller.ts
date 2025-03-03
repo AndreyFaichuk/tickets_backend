@@ -48,19 +48,19 @@ export class CommentsController {
     return await this.commentsService.getAll(todoId);
   }
 
-  @Delete(':id')
+  @Delete(':todoId/:id')
   async deleteColumn(
-    @Param() params: { id: string },
+    @Param() params: { id: string; todoId: string },
     @Req() req: Request,
   ): ApiResponse<Comment> {
-    const { id } = params;
+    const { id, todoId } = params;
 
     const userId = this.cookieService.validateCookie(
       req,
       COOKIE_NAMES.sessionId,
     );
 
-    return await this.commentsService.delete(id, userId);
+    return await this.commentsService.delete({ commentId: id, userId, todoId });
   }
 
   @Patch(':id')

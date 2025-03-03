@@ -24,6 +24,8 @@ import { Comment, CommentSchema } from './schemas/comments.schema';
 import { WorkspacesController } from './workspaces/workspaces.controller';
 import { WorkspacesService } from './workspaces/workspaces.service';
 import { Workspace, WorkspaceSchema } from './schemas/workspaces.schema';
+import { InviteController } from './invite/invite.controller';
+import { InviteService } from './invite/invite.service';
 @Module({
   imports: [
     HttpModule,
@@ -46,6 +48,7 @@ import { Workspace, WorkspaceSchema } from './schemas/workspaces.schema';
     ColumnsController,
     CommentsController,
     WorkspacesController,
+    InviteController,
   ],
   providers: [
     TodosService,
@@ -57,6 +60,7 @@ import { Workspace, WorkspaceSchema } from './schemas/workspaces.schema';
     AvatarService,
     CommentsService,
     WorkspacesService,
+    InviteService,
   ],
 })
 export class AppModule {
