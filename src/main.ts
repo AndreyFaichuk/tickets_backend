@@ -1,11 +1,16 @@
 import * as cookieParser from 'cookie-parser';
-
+import * as fs from 'fs';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const httpsOptions = {
+    cert: fs.readFileSync('/usr/src/app/ssl/certificate.crt'),
+    key: fs.readFileSync('/usr/src/app/ssl/private.key'),
+  };
+
+  const app = await NestFactory.create(AppModule, { httpsOptions });
 
   const config = new DocumentBuilder()
     .setDescription('The todo API description')
