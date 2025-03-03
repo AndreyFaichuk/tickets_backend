@@ -16,7 +16,11 @@ async function bootstrap() {
 
   app.enableCors({
     credentials: true,
-    origin: ['http://localhost:8080', 'http://18.214.91.17'],
+    origin: [
+      'http://localhost:8080',
+      'http://18.214.91.17',
+      'https://tickets-platform.duckdns.org',
+    ],
   });
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
