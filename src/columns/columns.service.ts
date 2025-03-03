@@ -10,14 +10,14 @@ import { MoveCardDto } from './dto/moveCard.dto';
 import { ReplaceAllCardsToColumnDto } from './dto/replaceAllTodosToColumn.dto';
 import { Todo } from 'src/schemas/todos.schemas';
 import { stringToObjectId, validateObjectId } from 'src/utils';
-import { Workspace } from 'src/schemas/workspaces.schema';
+import { WorkspacesService } from 'src/workspaces/workspaces.service';
 
 @Injectable()
 export class ColumnsService {
   constructor(
     @InjectModel(Column.name) private columnModel: Model<Column>,
     @InjectModel(Todo.name) private todoModel: Model<Todo>,
-    @InjectModel(Workspace.name) private workspaceModel: Model<Workspace>,
+    private readonly workspacesService: WorkspacesService,
   ) {}
 
   async create(
@@ -28,10 +28,7 @@ export class ColumnsService {
 
     const { workspaceId } = createColumnDto;
 
-    await this.workspaceModel.updateOne(
-      { _id: stringToObjectId(workspaceId) },
-      { $inc: { totalColumns: 1 } },
-    );
+    await this.workspacesService.incrementTotalColumns(workspaceId);
 
     return this.columnModel.create({
       ...createColumnDto,
@@ -40,7 +37,12 @@ export class ColumnsService {
     });
   }
 
-  findAll(workspaceId: string): ApiResponse<Column[]> {
+  async findAll(userId: string, workspaceId: string): ApiResponse<Column[]> {
+    await this.workspacesService.isAllowedToGetWorkspaceContent(
+      userId,
+      workspaceId,
+    );
+
     return this.columnModel
       .find({ workspaceId: stringToObjectId(workspaceId) })
       .populate({
@@ -61,9 +63,9 @@ export class ColumnsService {
       );
     }
 
-    await this.workspaceModel.findByIdAndUpdate(deletedColumn.workspaceId, {
-      $inc: { totalColumns: -1 },
-    });
+    const workspaceId = deletedColumn.workspaceId.toString();
+
+    await this.workspacesService.decrementTotalColumns(workspaceId);
 
     return deletedColumn;
   }

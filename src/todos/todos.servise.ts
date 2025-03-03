@@ -11,18 +11,33 @@ import { Column } from 'src/schemas/columns.schema';
 import { UploadService } from 'src/upload/upload.service';
 import { ConfigService } from '@nestjs/config';
 import { AWS_S3_BUCKETS, FILE_TYPES_MAP } from 'src/constants';
-import { validateObjectId } from 'src/utils';
-import { Workspace } from 'src/schemas/workspaces.schema';
+import { stringToObjectId, validateObjectId } from 'src/utils';
+import { WorkspacesService } from 'src/workspaces/workspaces.service';
 
 @Injectable()
 export class TodosService {
   constructor(
     @InjectModel(Todo.name) private todoModel: Model<Todo>,
     @InjectModel(Column.name) private columnModel: Model<Column>,
-    @InjectModel(Workspace.name) private workspaceModel: Model<Workspace>,
+    private readonly workspacesService: WorkspacesService,
     private readonly uploadService: UploadService,
     private readonly configService: ConfigService,
   ) {}
+
+  private updateCount(todoId: string, field: 'totalComments', value: number) {
+    return this.todoModel.updateOne(
+      { _id: stringToObjectId(todoId) },
+      { $inc: { [field]: value } },
+    );
+  }
+
+  incrementTotalComments(todoId: string) {
+    return this.updateCount(todoId, 'totalComments', 1);
+  }
+
+  decrementTotalComments(todoId: string) {
+    return this.updateCount(todoId, 'totalComments', -1);
+  }
 
   async create(
     createTodoDto: CreateTodoDto,
@@ -53,10 +68,9 @@ export class TodosService {
       { new: true },
     );
 
-    await this.workspaceModel.updateOne(
-      { _id: updatedColumn.workspaceId },
-      { $inc: { totalTickets: 1 } },
-    );
+    const workspaceId = updatedColumn.workspaceId.toString();
+
+    await this.workspacesService.incrementTotalTickets(workspaceId);
 
     return createdTodo;
   }
@@ -145,9 +159,9 @@ export class TodosService {
       { safe: true, multi: false, new: true },
     );
 
-    await this.workspaceModel.findByIdAndUpdate(column.workspaceId, {
-      $inc: { totalTickets: -1 },
-    });
+    const workspaceId = column.workspaceId.toString();
+
+    await this.workspacesService.decrementTotalTickets(workspaceId);
 
     return res;
   }
