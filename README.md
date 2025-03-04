@@ -41,8 +41,8 @@ This setup includes the following services:
 
 ## Production
 
-1. Works with SSL certificate and SSL certificate key over a secure **https** protocol (Configured through the appropriate Nginx server configuration)
-2. The platform is available at the following link in the production environment (When cloud instance runs) - **Tickets Platform** - [Tickets Platform](https://tickets-platform.duckdns.org/app/workspaces)
+1. Works with SSL certificate and SSL certificate key over a secure **https** protocol for **tickets-platform.duckdns.org** domen (Configured through the Dockerfile and Nginx server configuration for the production environment)
+2. The platform is available at the following link in the production environment (When cloud instance runs) - **Tickets Platform** - (https://tickets-platform.duckdns.org/app/workspaces)
 
 ## Docker Compose Configuration
 
