@@ -16,8 +16,10 @@ export class CookieService {
   private readonly secretKey = process.env.DATABASE_URL;
   private readonly ivLength = 16;
 
-  private readonly oneHourInMilliseconds = 3600 * 1000; // One hour
-  private readonly thirtyDaysInMilliseconds = 30 * 24 * 60 * 60 * 1000; // Thirty days
+  private readonly oneHourInMilliseconds = 3600 * 1000; // 1 h
+  private readonly thirtyDaysInMilliseconds = 30 * 24 * 60 * 60 * 1000; // 30 d
+
+  private readonly isProduction = process.env.NODE_ENV === 'production';
 
   cookieAge(isRememberMe: boolean): number {
     return isRememberMe
@@ -62,10 +64,9 @@ export class CookieService {
       return decrypted;
     } catch (error) {
       console.error('Error decrypting cookie:', error);
-
       throw new CustomException(
-        'Invalid session, please, login!',
-        HttpStatus.BAD_REQUEST,
+        'Invalid session, please login!',
+        HttpStatus.UNAUTHORIZED,
       );
     }
   }
@@ -79,9 +80,24 @@ export class CookieService {
     };
 
     const stringifiedUserData = JSON.stringify(userData);
-
     const encryptedData = this.encryptData(stringifiedUserData);
-    res.cookie(name, encryptedData, { maxAge: cookieExpiredAfter });
+
+    res.cookie(name, encryptedData, {
+      maxAge: cookieExpiredAfter,
+      httpOnly: true,
+      secure: true,
+      sameSite: this.isProduction ? 'none' : 'lax',
+      path: '/',
+    });
+  }
+
+  clearCookie(res: Response, name: string) {
+    res.clearCookie(name, {
+      httpOnly: true,
+      secure: true,
+      sameSite: this.isProduction ? 'none' : 'lax',
+      path: '/',
+    });
   }
 
   validateCookie(req: Request, cookieName: string): string | null {
