@@ -5,12 +5,16 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const httpsOptions = {
-    cert: fs.readFileSync('/usr/src/app/ssl/certificate.crt'),
-    key: fs.readFileSync('/usr/src/app/ssl/private.key'),
-  };
+  const isProduction = process.env.NODE_ENV === 'production';
 
-  const app = await NestFactory.create(AppModule, { httpsOptions });
+  const app = isProduction
+    ? await NestFactory.create(AppModule, {
+        httpsOptions: {
+          cert: fs.readFileSync('/usr/src/app/ssl/certificate.crt'),
+          key: fs.readFileSync('/usr/src/app/ssl/private.key'),
+        },
+      })
+    : await NestFactory.create(AppModule);
 
   const config = new DocumentBuilder()
     .setDescription('The todo API description')
