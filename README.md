@@ -39,6 +39,11 @@ This setup includes the following services:
 1. **CI Process**: Check PRs before merging into the **main** branch, including linting, and types checks.
 2. **CD Process**: The CD process begins manually by new tag v\* to the AWS VPS instance.
 
+## Production
+
+1. Works with SSL certificate and SSL certificate key over a secure **https** protocol (Configured through the appropriate Nginx server configuration)
+2. The platform is available at the following link in the production environment (When cloud instance runs) - **Tickets Platform** - [Tickets Platform](https://tickets-platform.duckdns.org/app/workspaces)
+
 ## Docker Compose Configuration
 
 ```yaml
@@ -65,9 +70,12 @@ services:
       context: ./tickets_frontend
       dockerfile: Dockerfile.prod
     ports:
-      - '8080:8080'
+      - '8080:80'
+      - '443:443'
     env_file:
       - ./tickets_frontend/.env.prod
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - tickets_backend_prod
 
@@ -95,6 +103,8 @@ services:
       - '3000:3000'
     env_file:
       - ./tickets_backend/.env.prod
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
 
   mongo:
     image: mongo
