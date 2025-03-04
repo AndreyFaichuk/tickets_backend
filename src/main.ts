@@ -5,7 +5,9 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const httpsOptions = {
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  const httpsOptions = isProduction && {
     cert: fs.readFileSync('/usr/src/app/ssl/certificate.crt'),
     key: fs.readFileSync('/usr/src/app/ssl/private.key'),
   };

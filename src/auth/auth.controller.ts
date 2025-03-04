@@ -2,12 +2,14 @@ import { ApiCookieAuth } from '@nestjs/swagger';
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
+  Req,
   Res,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 import { AuthService } from './auth.service';
 import { RegistrationUserDto } from './dto/RegistrationUserDto';
@@ -48,5 +50,23 @@ export class AuthController {
     this.cookieService.setCookie(res, COOKIE_NAMES.sessionId, loggedInUser);
 
     return;
+  }
+
+  @Get('check')
+  checkAuth(@Req() req: Request, @Res() res) {
+    const userId = this.cookieService.validateCookie(
+      req,
+      COOKIE_NAMES.sessionId,
+    );
+
+    if (userId) {
+      return res.json({ isAuthenticated: !!userId });
+    }
+  }
+  @HttpCode(HttpStatus.OK)
+  @Post('logout')
+  logout(@Res() res) {
+    this.cookieService.clearCookie(res, COOKIE_NAMES.sessionId);
+    res.send();
   }
 }
