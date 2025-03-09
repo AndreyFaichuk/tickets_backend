@@ -4,8 +4,9 @@ import { Model } from 'mongoose';
 import { Workspace } from 'src/schemas/workspaces.schema';
 import { CreateWorkspaceDto } from './dto/createWorkspace.dto';
 import { CustomException } from 'src/exceptions/customExeption.exeption';
-import { ApiResponse } from 'src/types';
+import { ApiResponse, PaginatedData } from 'src/types';
 import { stringToObjectId, validateObjectId } from 'src/utils';
+import { PaginationDto } from './dto/pagination.dto';
 
 @Injectable()
 export class WorkspacesService {
@@ -36,27 +37,60 @@ export class WorkspacesService {
     });
   }
 
-  getAll(userId: string): ApiResponse<Workspace[]> {
+  async getAll(
+    userId: string,
+    { page = 1, limit = 5, search = '' }: PaginationDto,
+  ): ApiResponse<PaginatedData<Workspace[]>> {
     validateObjectId(userId);
 
     const objectIdUserId = stringToObjectId(userId);
 
-    return this.workspaceModel
-      .find({
+    const skip = (page - 1) * limit;
+
+    let searchQuery = {};
+
+    if (search) {
+      searchQuery = {
+        ...searchQuery,
+        title: { $regex: search, $options: 'i' },
+      };
+    }
+
+    const [workspaces, totalItems] = await Promise.all([
+      this.workspaceModel
+        .find({
+          $or: [{ creator: objectIdUserId }, { members: objectIdUserId }],
+          ...searchQuery,
+        })
+        .populate([
+          {
+            path: 'creator',
+            model: 'User',
+            select: '_id avatarUrl firstName lastName',
+          },
+          {
+            path: 'members',
+            model: 'User',
+            select: '_id avatarUrl firstName lastName',
+          },
+        ])
+        .skip(skip)
+        .limit(limit),
+
+      this.workspaceModel.countDocuments({
         $or: [{ creator: objectIdUserId }, { members: objectIdUserId }],
-      })
-      .populate([
-        {
-          path: 'creator',
-          model: 'User',
-          select: '_id avatarUrl firstName lastName',
-        },
-        {
-          path: 'members',
-          model: 'User',
-          select: '_id avatarUrl firstName lastName',
-        },
-      ]);
+        ...searchQuery,
+      }),
+    ]);
+
+    return {
+      content: workspaces,
+      pagination: {
+        totalItems,
+        totalPages: Math.ceil(totalItems / limit),
+        currentPage: Number(page),
+      },
+    };
   }
 
   async getOne(id: string): ApiResponse<Workspace> {
