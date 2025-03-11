@@ -7,6 +7,9 @@ export const getRandomItem = <T>(array: readonly T[]): T => {
   return array[randomIndex];
 };
 
+export const escapeRegExp = (string: string): string =>
+  string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+
 export const stringToObjectId = (id: string) => new Types.ObjectId(id);
 
 export const validateObjectId = (id: string) => {
