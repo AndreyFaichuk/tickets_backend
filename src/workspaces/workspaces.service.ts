@@ -5,8 +5,9 @@ import { Workspace } from 'src/schemas/workspaces.schema';
 import { CreateWorkspaceDto } from './dto/createWorkspace.dto';
 import { CustomException } from 'src/exceptions/customExeption.exeption';
 import { ApiResponse, PaginatedData } from 'src/types';
-import { stringToObjectId, validateObjectId } from 'src/utils';
+import { escapeRegExp, stringToObjectId, validateObjectId } from 'src/utils';
 import { PaginationDto } from './dto/pagination.dto';
+import { DEFAULT_SORT_OPTION, DEFAULT_SORT_OPTION_MAP } from './constants';
 
 @Injectable()
 export class WorkspacesService {
@@ -39,27 +40,40 @@ export class WorkspacesService {
 
   async getAll(
     userId: string,
-    { page = 1, limit = 5, search = '' }: PaginationDto,
+    {
+      page = 1,
+      limit = 5,
+      search = '',
+      sort = DEFAULT_SORT_OPTION.asc,
+      isCreator = false,
+    }: PaginationDto,
   ): ApiResponse<PaginatedData<Workspace[]>> {
     validateObjectId(userId);
 
     const objectIdUserId = stringToObjectId(userId);
 
     const skip = (page - 1) * limit;
+    const formatedSortOption = DEFAULT_SORT_OPTION_MAP[sort];
 
     let searchQuery = {};
 
     if (search) {
+      const safeSearch = escapeRegExp(search);
+
       searchQuery = {
         ...searchQuery,
-        title: { $regex: search, $options: 'i' },
+        title: { $regex: safeSearch, $options: 'i' },
       };
     }
+
+    const mainQuery = isCreator
+      ? { creator: objectIdUserId }
+      : { $or: [{ creator: objectIdUserId }, { members: objectIdUserId }] };
 
     const [workspaces, totalItems] = await Promise.all([
       this.workspaceModel
         .find({
-          $or: [{ creator: objectIdUserId }, { members: objectIdUserId }],
+          ...mainQuery,
           ...searchQuery,
         })
         .populate([
@@ -74,11 +88,12 @@ export class WorkspacesService {
             select: '_id avatarUrl firstName lastName',
           },
         ])
+        .sort({ created_at: formatedSortOption })
         .skip(skip)
         .limit(limit),
 
       this.workspaceModel.countDocuments({
-        $or: [{ creator: objectIdUserId }, { members: objectIdUserId }],
+        ...mainQuery,
         ...searchQuery,
       }),
     ]);

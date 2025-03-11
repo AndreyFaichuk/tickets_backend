@@ -1,5 +1,6 @@
-import { IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { SortOption } from '../constants';
 
 export class PaginationDto {
   @IsOptional()
@@ -17,4 +18,12 @@ export class PaginationDto {
   @IsOptional()
   @IsString({ message: 'Search must be an string' })
   search?: string;
+
+  @IsOptional()
+  @IsString({ message: 'Sort must be an either asc or desc' })
+  sort?: SortOption;
+
+  @IsOptional()
+  @IsBoolean({ message: 'isCreator must be a boolean' })
+  isCreator?: boolean;
 }
