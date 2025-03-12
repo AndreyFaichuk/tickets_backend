@@ -159,29 +159,29 @@ describe('TodosService', () => {
       expect(model.findByIdAndDelete).toHaveBeenCalledWith(todoId);
       expect(result).toEqual(mockTodo);
     });
+  });
 
-    describe('update', () => {
-      it('should throw a CustomException if provided id is not valid', async () => {
-        const customException = new CustomException(
-          'Please, provide a valid Id!',
-          HttpStatus.BAD_REQUEST,
-        );
+  describe('update', () => {
+    it('should throw a CustomException if provided id is not valid', async () => {
+      const customException = new CustomException(
+        'Please, provide a valid Id!',
+        HttpStatus.BAD_REQUEST,
+      );
 
-        jest.spyOn(mongoose, 'isValidObjectId').mockReturnValue(false);
+      jest.spyOn(mongoose, 'isValidObjectId').mockReturnValue(false);
 
-        await expect(todoService.update(mockTodo, todoId)).rejects.toThrow(
-          customException,
-        );
-      });
+      await expect(todoService.update(mockTodo, todoId)).rejects.toThrow(
+        customException,
+      );
+    });
 
-      it('should update a todo', async () => {
-        jest.spyOn(mongoose, 'isValidObjectId').mockReturnValue(true);
-        jest.spyOn(model, 'findByIdAndUpdate').mockResolvedValue(mockTodo);
+    it('should update a todo', async () => {
+      jest.spyOn(mongoose, 'isValidObjectId').mockReturnValue(true);
+      jest.spyOn(model, 'findByIdAndUpdate').mockResolvedValue(mockTodo);
 
-        const result = await todoService.update(mockTodo, todoId);
+      const result = await todoService.update(mockTodo, todoId);
 
-        expect(result).toEqual(mockTodo);
-      });
+      expect(result).toEqual(mockTodo);
     });
   });
 });
