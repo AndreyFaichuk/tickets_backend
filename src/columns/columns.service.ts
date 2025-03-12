@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { Column } from 'src/schemas/columns.schema';
 import { CreateColumnDto } from './dto/createColumn.dto';
 import { ApiResponse } from 'src/types';
@@ -19,6 +19,31 @@ export class ColumnsService {
     @InjectModel(Todo.name) private todoModel: Model<Todo>,
     private readonly workspacesService: WorkspacesService,
   ) {}
+
+  async addNewCard(
+    columnId: string,
+    todoId: mongoose.Types.ObjectId,
+  ): ApiResponse<Column> {
+    validateObjectId(columnId);
+
+    return await this.columnModel.findByIdAndUpdate(
+      columnId,
+      { $push: { cards: todoId } },
+      { new: true },
+    );
+  }
+
+  async removeCard(columnId: string, todoId: string): ApiResponse<Column> {
+    validateObjectId(columnId);
+
+    const todoObjectId = stringToObjectId(todoId);
+
+    return await this.columnModel.findByIdAndUpdate(
+      columnId,
+      { $pull: { cards: todoObjectId } },
+      { safe: true, multi: false, new: true },
+    );
+  }
 
   async create(
     createColumnDto: CreateColumnDto,

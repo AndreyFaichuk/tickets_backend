@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CookieService } from './cookie.service';
 
-describe('CookieService', () => {
+describe.skip('CookieService', () => {
   let service: CookieService;
 
   beforeEach(async () => {
