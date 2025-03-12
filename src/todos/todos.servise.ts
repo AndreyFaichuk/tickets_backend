@@ -7,21 +7,21 @@ import { Todo } from 'src/schemas/todos.schemas';
 import { CreateTodoDto } from './dto/createTodo.dto';
 import { CustomException } from 'src/exceptions/customExeption.exeption';
 import { ApiResponse } from 'src/types';
-import { Column } from 'src/schemas/columns.schema';
 import { UploadService } from 'src/upload/upload.service';
 import { ConfigService } from '@nestjs/config';
 import { AWS_S3_BUCKETS, FILE_TYPES_MAP } from 'src/constants';
 import { stringToObjectId, validateObjectId } from 'src/utils';
 import { WorkspacesService } from 'src/workspaces/workspaces.service';
+import { ColumnsService } from 'src/columns/columns.service';
 
 @Injectable()
 export class TodosService {
   constructor(
     @InjectModel(Todo.name) private todoModel: Model<Todo>,
-    @InjectModel(Column.name) private columnModel: Model<Column>,
     private readonly workspacesService: WorkspacesService,
     private readonly uploadService: UploadService,
     private readonly configService: ConfigService,
+    private readonly columnService: ColumnsService,
   ) {}
 
   private updateCount(todoId: string, field: 'totalComments', value: number) {
@@ -62,10 +62,9 @@ export class TodosService {
 
     const createdTodo = await newTodo.save();
 
-    const updatedColumn = await this.columnModel.findByIdAndUpdate(
+    const updatedColumn = await this.columnService.addNewCard(
       columnId,
-      { $push: { cards: createdTodo._id } },
-      { new: true },
+      createdTodo._id,
     );
 
     const workspaceId = updatedColumn.workspaceId.toString();
@@ -153,11 +152,7 @@ export class TodosService {
 
     const res = await this.todoModel.findByIdAndDelete(id);
 
-    const column = await this.columnModel.findByIdAndUpdate(
-      columnId,
-      { $pull: { cards: new mongoose.Types.ObjectId(id) } },
-      { safe: true, multi: false, new: true },
-    );
+    const column = await this.columnService.removeCard(columnId, id);
 
     const workspaceId = column.workspaceId.toString();
 
