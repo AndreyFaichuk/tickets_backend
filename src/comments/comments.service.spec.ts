@@ -266,7 +266,7 @@ describe('CommentsService', () => {
 
       expect(commentModel.findByIdAndUpdate).toHaveBeenCalledWith(
         mockCommentId,
-        { comment: 'Updated text1' },
+        { comment: 'Updated text' },
         { returnOriginal: false },
       );
     });
