@@ -20,6 +20,12 @@ jobs:
       - name: Log in to GitHub Container Registry
         run: echo "${{ secrets.GHCR_LOGIN }}" | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
 
+      - name: Prepare SSL files
+        run: |
+          mkdir -p ssl
+          echo "${{ secrets.SSL_CERTIFICATE }}" > ssl/certificate.crt
+          echo "${{ secrets.SSL_PRIVATE_KEY }}" > ssl/private.key
+
       - name: Build and push Docker image
         run: |
           docker build -t ghcr.io/andreyfaichuk/tickets-backend:latest -f Dockerfile.prod .
