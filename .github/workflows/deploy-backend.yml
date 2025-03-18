@@ -32,6 +32,11 @@ jobs:
           chmod 600 ~/.ssh/tickets-pair.pem
           ssh-keyscan -t rsa -H ec2-18-214-91-17.compute-1.amazonaws.com >> ~/.ssh/known_hosts
 
+      - name: Copy SSL files from remote server
+        run: |
+          mkdir -p ssl
+          scp -i ~/.ssh/tickets-pair.pem -o StrictHostKeyChecking=no -r ubuntu@ec2-18-214-91-17.compute-1.amazonaws.com:/home/ubuntu/ssl/* ./ssl/
+
       - name: Deploy to VPS
         run: |
           ssh -i ~/.ssh/tickets-pair.pem -o IdentitiesOnly=yes ubuntu@ec2-18-214-91-17.compute-1.amazonaws.com << 'EOF'
