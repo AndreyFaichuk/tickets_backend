@@ -45,7 +45,7 @@ jobs:
             export BACKEND_ENV="${{ secrets.BACKEND_ENV }}"
             echo "${{ secrets.GHCR_LOGIN }}" | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
              cd /home/ubuntu/project
-             docker pull ghcr.io/andreyfaichuk/tickets-frontend:latest
+             docker pull ghcr.io/andreyfaichuk/tickets-backend:latest
              chmod +x ./start-prod.sh
              ./start-prod.sh
           EOF
