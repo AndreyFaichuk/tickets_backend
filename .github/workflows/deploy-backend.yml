@@ -20,11 +20,6 @@ jobs:
       - name: Log in to GitHub Container Registry
         run: echo "${{ secrets.GHCR_LOGIN }}" | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
 
-      - name: Copy SSL files from remote server
-        run: |
-          mkdir -p ssl
-          scp -i ~/.ssh/tickets-pair.pem -o StrictHostKeyChecking=no -r ubuntu@ec2-18-214-91-17.compute-1.amazonaws.com:/home/ubuntu/ssl/* ./ssl/
-
       - name: Build and push Docker image
         run: |
           docker build -t ghcr.io/andreyfaichuk/tickets-backend:latest -f Dockerfile.prod .

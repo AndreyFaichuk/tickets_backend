@@ -41,6 +41,7 @@ lerna-debug.log*
 .env.test.local
 .env.prod
 .env.local
+ssl/*
 
 # temp directory
 .temp
