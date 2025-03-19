@@ -8,10 +8,9 @@ async function bootstrap() {
   const isProduction = process.env.NODE_ENV === 'production';
 
   const httpsOptions = isProduction && {
-    cert: fs.readFileSync('/usr/src/app/ssl/certificate.crt'),
-    key: fs.readFileSync('/usr/src/app/ssl/private.key'),
+    cert: fs.readFileSync('/ssl/certificate.crt'),
+    key: fs.readFileSync('/ssl/private.key'),
   };
-
   const app = await NestFactory.create(AppModule, { httpsOptions });
 
   const config = new DocumentBuilder()

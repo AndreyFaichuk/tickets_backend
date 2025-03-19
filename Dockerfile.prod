@@ -20,8 +20,6 @@ RUN npm install --only=production
 
 COPY --from=build /usr/src/app/dist ./dist
 
-COPY ./ssl /usr/src/app/ssl
-
 EXPOSE 3000
 
 CMD ["node", "dist/main.js"]
