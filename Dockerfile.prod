@@ -10,8 +10,7 @@ COPY . .
 
 ARG BACKEND_ENV
 RUN echo "$BACKEND_ENV" > .env
-
-RUN npm run build
+RUN export $(grep -v '^#' .env | xargs) && npm run build
 
 # Stage 2: Production
 FROM node:20-slim
