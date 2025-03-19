@@ -18,7 +18,8 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          docker build -t ghcr.io/andreyfaichuk/tickets-backend:latest -f Dockerfile.prod .
+          docker build --build-arg BACKEND_ENV="${{ secrets.BACKEND_ENV }}" \
+            -t ghcr.io/andreyfaichuk/tickets-backend:latest -f Dockerfile.prod .
           docker push ghcr.io/andreyfaichuk/tickets-backend:latest
 
       - name: Setup SSH key for VPS
