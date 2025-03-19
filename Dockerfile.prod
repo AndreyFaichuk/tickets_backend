@@ -26,4 +26,4 @@ COPY --from=build /usr/src/app/.env .env
 
 EXPOSE 3000
 
-CMD ["node", "dist/main.js"]
+CMD ["sh", "-c", "export $(grep -v '^#' .env | xargs) && node dist/main.js"]
