@@ -9,10 +9,6 @@ jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
 
-    env:
-      FRONTEND_ENV: ${{ secrets.FRONTEND_ENV }}
-      BACKEND_ENV: ${{ secrets.BACKEND_ENV }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -41,8 +37,6 @@ jobs:
       - name: Deploy to VPS
         run: |
           ssh -t -i ~/.ssh/tickets-pair.pem -o IdentitiesOnly=yes ubuntu@ec2-18-214-91-17.compute-1.amazonaws.com "bash -s" << 'EOF'
-            export FRONTEND_ENV="${{ secrets.FRONTEND_ENV }}"
-            export BACKEND_ENV="${{ secrets.BACKEND_ENV }}"
             echo "${{ secrets.GHCR_LOGIN }}" | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
              cd /home/ubuntu/project
              docker pull ghcr.io/andreyfaichuk/tickets-backend:latest
