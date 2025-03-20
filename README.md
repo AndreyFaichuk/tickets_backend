@@ -8,7 +8,6 @@ project/
   tickets_frontend/
   docker-compose.yml
   start-dev.sh
-  start-prod.sh
 ```
 
 ## Scripts
@@ -17,12 +16,6 @@ start-dev.sh
 
 ```
 docker-compose up -d --build tickets_frontend_dev tickets_backend_dev
-```
-
-start-prod.sh
-
-```
-docker-compose up -d --build tickets_frontend_prod tickets_backend_prod
 ```
 
 ## Services Included
@@ -34,10 +27,25 @@ This setup includes the following services:
 - **Database Dev**: Local instance of MongoDB.
 - **Database Prod**: Cloud instance of MongoDB Atlas.
 
-## Flow (CI/CD)
+## CI/CD Process
 
-1. **CI Process**: Check PRs before merging into the **main** branch, including linting, and types checks.
-2. **CD Process**: The CD process begins manually by new tag v\* to the AWS VPS instance.
+### Continuous Integration (CI)
+
+- On every Pull Request to `main`, the following checks are executed:
+  - Linting
+  - Type checking
+  - Unit tests (if configured)
+- If all checks pass, the PR can be merged into `main`.
+
+### Continuous Deployment (CD)
+
+Deployment is **triggered manually** by creating a new tag in the format `v*`.
+
+1. **GitHub Actions** builds a Docker image and pushes it to **GitHub Container Registry (GHCR)**.
+2. The workflow **connects to the AWS VPS via SSH**.
+3. It **pulls the latest image**, updates the container, and restarts the service.
+
+**Technologies used**: GitHub Actions, Docker, GHCR, SSH, AWS EC2.
 
 ## Production
 
@@ -48,7 +56,6 @@ This setup includes the following services:
 
 ```yaml
 services:
-  # Dev (Vite)
   tickets_frontend_dev:
     build:
       context: ./tickets_frontend
@@ -64,22 +71,6 @@ services:
     depends_on:
       - tickets_backend_dev
 
-  # Prod (Nginx)
-  tickets_frontend_prod:
-    build:
-      context: ./tickets_frontend
-      dockerfile: Dockerfile.prod
-    ports:
-      - '8080:80'
-      - '443:443'
-    env_file:
-      - ./tickets_frontend/.env.prod
-    volumes:
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-    depends_on:
-      - tickets_backend_prod
-
-  # Backend Dev
   tickets_backend_dev:
     build:
       context: ./tickets_backend
@@ -93,18 +84,6 @@ services:
       - /app/node_modules
     depends_on:
       - mongo
-
-  # Backend Prod
-  tickets_backend_prod:
-    build:
-      context: ./tickets_backend
-      dockerfile: Dockerfile.prod
-    ports:
-      - '3000:3000'
-    env_file:
-      - ./tickets_backend/.env.prod
-    volumes:
-      - /etc/letsencrypt:/etc/letsencrypt:ro
 
   mongo:
     image: mongo
