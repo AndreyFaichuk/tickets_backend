@@ -34,7 +34,7 @@ This setup includes the following services:
 - On every Pull Request to `main`, the following checks are executed:
   - Linting
   - Type checking
-  - Unit tests (if configured)
+  - Unit tests
 - If all checks pass, the PR can be merged into `main`.
 
 ### Continuous Deployment (CD)
